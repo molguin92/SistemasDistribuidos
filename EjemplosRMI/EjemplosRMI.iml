@@ -7,6 +7,5 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="net.sf.jopt-simple:jopt-simple:4.9" level="project" />
   </component>
 </module>
