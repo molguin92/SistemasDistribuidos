@@ -9,7 +9,7 @@ public class Server {
 	public static void main(String[] args) {
 		
 		try {
-            IBanco banco = new Banco();
+            IBanco banco = new Banco(9001);
 			Naming.rebind(urlServer, banco);
 			System.out.println("Objeto Banco publicado en "+urlServer);
 		} catch (RemoteException e) {

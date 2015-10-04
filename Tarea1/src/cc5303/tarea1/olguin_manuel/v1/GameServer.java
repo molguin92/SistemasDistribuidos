@@ -1,9 +1,7 @@
-package cc5303.tarea1.olguin_manuel;
-
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
+package cc5303.tarea1.olguin_manuel.v1;
 
 import java.net.MalformedURLException;
+import java.rmi.AlreadyBoundException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 
@@ -12,22 +10,22 @@ import java.rmi.RemoteException;
  */
 public class GameServer {
 
-    static String urlServer = "rmi://localhost:5303/gameserver";
+    static String urlServer = "rmi://localhost:1099/gameserver";
 
     public static void main ( String[] args )
     {
-        OptionParser parser = new OptionParser();
-        parser.accepts("port").withRequiredArg().ofType(Integer.class).defaultsTo(9000);
-        parser.accepts("debug");
-        parser.accepts("help");
-
-        OptionSet params = parser.parse(args);
 
         GameThread game = new GameThread();
-        IPlayerFactory fact = game;
+        RemoteGameInterface rinter = null;
+        try {
+            rinter = new RemoteGameHandler(game);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        game.start();
 
         try {
-            Naming.rebind(urlServer, fact);
+            Naming.rebind(urlServer, rinter);
             System.out.println("Listening on "+urlServer);
         } catch (RemoteException e) {
             // TODO Auto-generated catch block

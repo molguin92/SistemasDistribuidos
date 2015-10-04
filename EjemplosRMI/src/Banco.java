@@ -13,8 +13,8 @@ public class Banco extends UnicastRemoteObject implements IBanco{
 	
 	private int fastMount = 1000;
 	
-	public Banco()throws RemoteException{
-		this.saldo = 10000;
+	public Banco(int saldo)throws RemoteException{
+		this.saldo = saldo;
 		this.numeroTX = 0;
 	}
 	

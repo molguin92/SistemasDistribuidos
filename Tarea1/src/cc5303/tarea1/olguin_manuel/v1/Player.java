@@ -1,4 +1,4 @@
-package cc5303.tarea1.olguin_manuel;
+package cc5303.tarea1.olguin_manuel.v1;
 
 import java.rmi.Remote;
 import java.util.LinkedList;
@@ -15,8 +15,8 @@ public class Player
     public int velY;
 
     public boolean ready;
-
     public boolean standing;
+    public boolean active;
 
     private Queue<Integer> ops;
 
@@ -32,19 +32,15 @@ public class Player
 
     public void jump()
     {
-        standing = false;
-        ops.offer(JUMP);
+        if (standing)
+        {
+            standing = false;
+            ops.offer(JUMP);
+        }
     }
 
-    public void moveRight()
-    {
-        ops.offer(MRIGHT);
-    }
-
-    public void moveLeft()
-    {
-        ops.offer(MLEFT);
-    }
+    public void moveLeft() { ops.offer(MLEFT); }
+    public void moveRight() { ops.offer(MRIGHT); }
 
     public void update()
     {
@@ -66,8 +62,7 @@ public class Player
             switch ( op )
             {
                 case JUMP:
-                    if ( standing ) // solo podemos saltar desde plataformas
-                        this.accelerate(0, 10);
+                    this.accelerate(0, 10);
                     break;
                 case MLEFT:
                     this.accelerate(-2, 0);
@@ -81,6 +76,12 @@ public class Player
             }
 
 
+    }
+
+    public int[] getState ()
+    {
+        int[] state = {posX, posY, velX, velY};
+        return state;
     }
 
     public void setReady()
@@ -100,6 +101,7 @@ public class Player
         this.ops = new LinkedList<>();
 
         this.standing = true;
+        this.active = false;
 
     }
 }
