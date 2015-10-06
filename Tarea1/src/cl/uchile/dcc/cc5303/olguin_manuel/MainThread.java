@@ -55,6 +55,8 @@ public class MainThread extends Thread {
         frame = new JFrame(TITLE);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(WIDTH, HEIGHT);
+        frame.setResizable(false);
 
         tablero = new Board(WIDTH, HEIGHT);
         tablero.p1 = player1;

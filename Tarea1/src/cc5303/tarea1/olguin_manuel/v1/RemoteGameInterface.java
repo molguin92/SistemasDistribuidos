@@ -8,6 +8,6 @@ import java.rmi.RemoteException;
  */
 public interface RemoteGameInterface extends Remote
 {
-    Player getPlayer() throws RemoteException;
-    BoardState getBoardState() throws RemoteException;
+    RemotePlayer getPlayer() throws RemoteException;
+    RemoteBoardState getBoardState() throws RemoteException;
 }

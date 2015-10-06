@@ -18,32 +18,27 @@ public class Client
     {
 
         RemoteGameInterface remote;
-        Player player;
-        BoardState state;
+        RemotePlayer player;
+        RemoteBoardState state;
         JFrame frame;
         Board board;
 
         try {
             remote = (RemoteGameInterface) Naming.lookup(GameServer.urlServer);
             state = remote.getBoardState();
-
             player = remote.getPlayer();
-
-            frame = new JFrame("Tarea1");
-            frame.setVisible(true);
-            frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
-
             board = new Board(state);
 
-            while(true)
-            {
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    try {
+                        ClientFrame frame = new ClientFrame(player, board, state.getDimensions());
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
 
-                state = remote.getBoardState();
-                player.jump();
-                board.repaint();
-            }
-
-
+                }
+            });
 
         } catch (NotBoundException e) {
             e.printStackTrace();

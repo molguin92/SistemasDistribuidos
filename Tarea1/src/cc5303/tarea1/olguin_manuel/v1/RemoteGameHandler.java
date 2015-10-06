@@ -14,16 +14,17 @@ public class RemoteGameHandler extends UnicastRemoteObject implements RemoteGame
 
     public RemoteGameHandler ( GameThread game ) throws RemoteException
     {
+        super();
         this.game = game;
     }
 
     @Override
-    public Player getPlayer() throws RemoteException {
+    public RemotePlayer getPlayer() throws RemoteException {
         return game.activatePlayer();
     }
 
     @Override
-    public BoardState getBoardState() throws RemoteException {
+    public RemoteBoardState getBoardState() throws RemoteException {
         return game.state;
     }
 }

@@ -1,6 +1,7 @@
 package cc5303.tarea1.olguin_manuel.v1;
 
 import java.awt.*;
+import java.rmi.RemoteException;
 
 /**
  * Created by sebablasko on 9/11/15.
@@ -10,11 +11,10 @@ public class Board extends Canvas {
     public int width, height;
     public Image img;
     public Graphics buffer;
-    public BoardState state;
+    public RemoteBoardState state;
 
-    public Board(BoardState state){
-        this.width = state.dimensions[0];
-        this.height = state.dimensions[1];
+    public Board(RemoteBoardState state)
+    {
         this.state = state;
     }
 
@@ -30,21 +30,25 @@ public class Board extends Canvas {
 
         buffer.setColor(Color.black);
         buffer.fillRect(0, 0, getWidth(), getHeight());;
+        int[][] players = new int[4][3];
+        int[][] platforms = new int [6][3];
 
-        for(int[] player: state.players)
-        {
-            //paint each player
-
-            int x = player[0] - 3;
-            int y = player[1] - 6;
-
-            buffer.setColor(Color.RED);
-            buffer.fillRect(x,y,6, 12);
+        try {
+            players = state.getPlayers();
+            platforms = state.getPlatforms();
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
 
-        buffer.setColor(Color.white);
+        buffer.setColor(Color.RED);
+        buffer.fillRect(players[0][0] - 5, players[0][1] - 5, 10, 10);
+
+        buffer.setColor(Color.WHITE);
+        for ( int[] platform: platforms )
+        {
+            buffer.fillRect(platform[0] - (platform[2]/2), platform[1] - 2, platform[2], 4 );
+        }
 
         g.drawImage(img, 0, 0, null);
     }
-
 }

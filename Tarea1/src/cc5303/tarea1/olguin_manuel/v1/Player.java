@@ -1,18 +1,20 @@
 package cc5303.tarea1.olguin_manuel.v1;
 
 import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.LinkedList;
 import java.util.Queue;
 
 /**
  * Created by arachnid92 on 03-10-15.
  */
-public class Player
+public class Player extends UnicastRemoteObject implements RemotePlayer
 {
     public int posX;
     public int posY;
-    public int velX;
-    public int velY;
+    public float velX;
+    public float velY;
 
     public boolean ready;
     public boolean standing;
@@ -24,64 +26,58 @@ public class Player
     private static final int MLEFT = 1;
     private static final int MRIGHT = 2;
 
-    public void accelerate( int X, int Y )
+    public void accelerate( float X, float Y )
     {
         this.velX += X;
         this.velY += Y;
     }
 
-    public void jump()
+    @Override
+    public void jump() throws RemoteException
     {
         if (standing)
         {
+            System.err.println("Jumping");
             standing = false;
-            ops.offer(JUMP);
+            this.accelerate(0, -8f);
         }
     }
 
-    public void moveLeft() { ops.offer(MLEFT); }
-    public void moveRight() { ops.offer(MRIGHT); }
+    @Override
+    public void moveLeft() throws RemoteException
+    {
+        System.err.println("Left");
+        if ( this.velX > -6)
+            this.accelerate(-2, 0);
+    }
+    @Override
+    public void moveRight() throws RemoteException
+    {
+        System.err.println("Right");
+        if ( this.velX < 6)
+            this.accelerate(2, 0);
+    }
 
     public void update()
     {
 
-        this.posX += this.velX;
-        this.posY += this.velY;
+        this.posX += (int)this.velX;
+        this.posY += (int)this.velY;
 
-        if ( !this.standing )
-            this.velY--;
-
-        if ( this.velX < 0 )
-            this.velX++;
-        else if ( this.velX > 0 )
-            this.velX--;
-
-        Integer op = ops.poll();
-
-        if ( op != null )
-            switch ( op )
-            {
-                case JUMP:
-                    this.accelerate(0, 10);
-                    break;
-                case MLEFT:
-                    this.accelerate(-2, 0);
-                    break;
-                case MRIGHT:
-                    this.accelerate(2, 0);
-                    break;
-                default:
-                    System.err.println("Operacion no reconocida.");
-                    break;
-            }
-
-
+        if ( !this.standing ) {
+            this.velY += 0.1;
+        } else {
+            if ( this.velX < 0 )
+                this.velX += 0.5;
+            else if ( this.velX > 0 )
+                this.velX -= 0.5;
+        }
     }
 
-    public int[] getState ()
+    @Override
+    public int[] getState () throws RemoteException
     {
-        int[] state = {posX, posY, velX, velY};
-        return state;
+        return new int[]{posX, posY, (int)velX, (int)velY};
     }
 
     public void setReady()
@@ -89,8 +85,9 @@ public class Player
         this.ready = true;
     }
 
-    public Player ( int posX, int posY )
+    public Player ( int posX, int posY ) throws RemoteException
     {
+        super();
 
         this.posX = posX;
         this.posY = posY;
