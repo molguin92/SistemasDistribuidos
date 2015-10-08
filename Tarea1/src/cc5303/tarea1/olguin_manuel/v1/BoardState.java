@@ -16,7 +16,7 @@ public class BoardState extends UnicastRemoteObject implements RemoteBoardState
 
     protected BoardState() throws RemoteException {
         super();
-        this.players = new int[0][];
+        this.players = new int[4][];
         this.platforms = new int[0][];
         this.dimensions = new int[0];
     }

@@ -22,13 +22,15 @@ public class PlatformGenerator
 
     private void addPlatformBetween ( Random rand,int x1, int x2, int y)
     {
-
+        System.err.printf("Adding platform between %d and %d\n", x1, x2);
         int pwidth;
         int cX;
         int dx = x2 - x1;
 
         pwidth = rand.nextInt((int)(0.2 * dx)) + (int)(0.5 * dx);
-        cX = pwidth/2 + rand.nextInt(dx - pwidth);
+        System.err.printf("Platform width: %d\n", pwidth);
+        cX = pwidth/2 + rand.nextInt(dx - pwidth) + x1;
+        System.err.printf("Platform center: %d\n", cX);
         this.platforms.add(new Platform(cX, y, pwidth));
     }
 
@@ -40,6 +42,7 @@ public class PlatformGenerator
         {
 
             int n = rand.nextInt(3) + 1;
+            System.err.printf("Random: %d\n", n);
             int d;
             switch (n)
             {
@@ -55,7 +58,7 @@ public class PlatformGenerator
                     d = width/n;
                     addPlatformBetween(rand, 0, d, y );
                     addPlatformBetween(rand, d, 2*d, y);
-                    addPlatformBetween(rand, d, 3*d, y);
+                    addPlatformBetween(rand, 2*d, 3*d, y);
                     break;
                 default:
                     break;

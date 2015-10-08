@@ -12,15 +12,20 @@ public class GameThread extends Thread {
 
     private boolean running;
     private int current_level;
+    private int no_players;
 
     public BoardState state;
     private PlatformGenerator platformGenerator;
     private Player[] players;
     private Platform[] platforms;
+    private CollissionHandler collissionHandler;
 
-    public Player activatePlayer() {
+    public RemotePlayer activatePlayer() {
         for (Player player : players) {
+
             if (!player.active) {
+                no_players++;
+                player.ID = no_players;
                 player.active = true;
                 return player;
             }
@@ -31,16 +36,18 @@ public class GameThread extends Thread {
 
     public void run() {
         while (running) {
+
+            collissionHandler.checkCollisions();
+
             for (int i = 0; i < players.length; i++) {
                 if (players[i].active)
                     players[i].update();
 
                 try {
-                    state.players[i] = players[i].getState();
+                    this.state.players[i] = players[i].getState();
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
-
             }
 
             for ( int i = 0; i < platforms.length; i++ )
@@ -72,7 +79,7 @@ public class GameThread extends Thread {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-        this.state.players = new int[players.length][4];
+        this.state.players = new int[4][4];
         this.state.dimensions = new int[2];
         this.state.dimensions[0] = WIDTH;
         this.state.dimensions[1] = HEIGHT;
@@ -80,6 +87,9 @@ public class GameThread extends Thread {
         this.platformGenerator = new PlatformGenerator(WIDTH, HEIGHT);
         this.platforms = this.platformGenerator.generatePlatforms();
         this.state.platforms = new int[this.platforms.length][3];
+
+        this.collissionHandler = new CollissionHandler(this.players, this.platforms);
+        this.no_players = 0;
     }
 
     @Override

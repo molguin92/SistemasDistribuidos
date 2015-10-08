@@ -6,9 +6,11 @@ package cc5303.tarea1.olguin_manuel.v1;
 public class Platform
 {
 
-    private int posX;
-    private int posY;
-    private int width;
+    public static int THICKNESS = 10;
+
+    public int posX;
+    public int posY;
+    public int width;
 
     public Platform ( int centerX, int centerY, int width )
     {
@@ -19,7 +21,7 @@ public class Platform
 
     public int[] getState ()
     {
-        return new int[] {posX, posY, width};
+        return new int[] {posX, posY, width, Platform.THICKNESS};
     }
 
 }

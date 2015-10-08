@@ -1,6 +1,6 @@
 package cc5303.tarea1.olguin_manuel.v1;
 
-import java.rmi.Remote;
+import java.awt.Color;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.LinkedList;
@@ -11,6 +11,11 @@ import java.util.Queue;
  */
 public class Player extends UnicastRemoteObject implements RemotePlayer
 {
+
+    public static int HW = 10;
+
+    public int ID;
+
     public int posX;
     public int posY;
     public float velX;
@@ -39,7 +44,8 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
         {
             System.err.println("Jumping");
             standing = false;
-            this.accelerate(0, -8f);
+            this.posY += 2;
+            this.accelerate(0, -5.5f);
         }
     }
 
@@ -47,15 +53,15 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     public void moveLeft() throws RemoteException
     {
         System.err.println("Left");
-        if ( this.velX > -6)
-            this.accelerate(-2, 0);
+        if ( this.velX > -4)
+            this.accelerate(-1, 0);
     }
     @Override
     public void moveRight() throws RemoteException
     {
         System.err.println("Right");
-        if ( this.velX < 6)
-            this.accelerate(2, 0);
+        if ( this.velX < 4)
+            this.accelerate(1, 0);
     }
 
     public void update()
@@ -77,7 +83,15 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     @Override
     public int[] getState () throws RemoteException
     {
-        return new int[]{posX, posY, (int)velX, (int)velY};
+        int active = this.active ? 1 : 0;
+
+        return new int[]{posX, posY, HW, active, this.ID};
+    }
+
+    @Override
+    public int getID () throws RemoteException
+    {
+        return this.ID;
     }
 
     public void setReady()
@@ -99,6 +113,5 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
 
         this.standing = true;
         this.active = false;
-
     }
 }

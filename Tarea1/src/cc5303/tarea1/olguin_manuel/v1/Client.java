@@ -27,7 +27,7 @@ public class Client
             remote = (RemoteGameInterface) Naming.lookup(GameServer.urlServer);
             state = remote.getBoardState();
             player = remote.getPlayer();
-            board = new Board(state);
+            board = new Board(state, player.getID());
 
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {

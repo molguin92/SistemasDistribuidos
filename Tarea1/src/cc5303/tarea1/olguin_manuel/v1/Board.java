@@ -8,13 +8,14 @@ import java.rmi.RemoteException;
  */
 public class Board extends Canvas {
 
-    public int width, height;
     public Image img;
     public Graphics buffer;
     public RemoteBoardState state;
+    public int playerID;
 
-    public Board(RemoteBoardState state)
+    public Board(RemoteBoardState state, int ID)
     {
+        this.playerID = ID;
         this.state = state;
     }
 
@@ -29,9 +30,9 @@ public class Board extends Canvas {
         }
 
         buffer.setColor(Color.black);
-        buffer.fillRect(0, 0, getWidth(), getHeight());;
-        int[][] players = new int[4][3];
-        int[][] platforms = new int [6][3];
+        buffer.fillRect(0, 0, getWidth(), getHeight());
+        int[][] players = new int[4][5];
+        int[][] platforms = new int[0][0];
 
         try {
             players = state.getPlayers();
@@ -40,13 +41,23 @@ public class Board extends Canvas {
             e.printStackTrace();
         }
 
-        buffer.setColor(Color.RED);
-        buffer.fillRect(players[0][0] - 5, players[0][1] - 5, 10, 10);
+        for ( int[] player : players )
+        {
+
+            if ( player[4] == 0 ) //no activo
+                continue;
+
+            if ( player[4] == this.playerID )
+            {
+                buffer.setColor(Color.RED);
+            } else { buffer.setColor(Color.BLUE); }
+
+            buffer.fillRect(player[0] - player[2]/2, player[1] - player[2]/2, player[2], player[2]);
+        }
 
         buffer.setColor(Color.WHITE);
-        for ( int[] platform: platforms )
-        {
-            buffer.fillRect(platform[0] - (platform[2]/2), platform[1] - 2, platform[2], 4 );
+        for (int[] platform : platforms) {
+            buffer.fillRect(platform[0] - (platform[2] / 2), platform[1] - platform[3] / 2, platform[2], platform[3]);
         }
 
         g.drawImage(img, 0, 0, null);
