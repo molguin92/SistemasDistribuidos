@@ -44,7 +44,7 @@ public class Board extends Canvas {
         for ( int[] player : players )
         {
 
-            if ( player[4] == 0 ) //no activo
+            if ( player[3] == 0 ) //no activo
                 continue;
 
             if ( player[4] == this.playerID )

@@ -22,6 +22,7 @@ public class CollissionHandler
 
         for ( Player player: players )
         {
+            //between platforms and players
             for ( Platform platform: platforms )
             {
 
@@ -40,6 +41,29 @@ public class CollissionHandler
                     {
                         player.body.setLocation(player.body.x, platform.y + Player.HW);
                         player.velY = 0.5f;
+                    }
+                }
+            }
+
+            //between players and players
+            for ( Player player1: players)
+            {
+                if ( player == player1 )
+                    continue;
+
+                if ( player.body.intersects(player1.body))
+                {
+                    if ( player.body.getMinY() < player1.body.getMinY() )
+                    {
+                        player.accelerate(0, -5f);
+                        if ( player1.velY < 0 )
+                            player1.velY = 0;
+                    }
+                    else
+                    {
+                        player1.accelerate(0, -5f);
+                        if ( player.velY < 0 )
+                            player.velY = 0;
                     }
                 }
             }
