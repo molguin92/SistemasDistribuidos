@@ -14,13 +14,14 @@ public class GameThread extends Thread {
     private static int HEIGHT = 600;
 
     private boolean running;
-    private int current_level;
     private int no_players;
+    private int score;
+    private float level_modifier_1;
+    private float level_modifier_2;
 
     public BoardState state;
     private Player[] players;
     private ArrayList<Platform> platforms;
-    private CollissionHandler collissionHandler;
 
     public RemotePlayer activatePlayer() {
         for (Player player : players) {
@@ -41,7 +42,7 @@ public class GameThread extends Thread {
 
             boolean shift = false;
 
-            collissionHandler.checkCollisions();
+            this.checkCollisions();
 
             for (int i = 0; i < players.length; i++) {
                 if (players[i].active)
@@ -58,8 +59,9 @@ public class GameThread extends Thread {
             }
 
             if (shift)
-                collissionHandler.shiftDown();
+                this.shiftDown();
 
+            this.state.platforms = new int[this.platforms.size()][0];
             for ( int i = 0; i < platforms.size(); i++ )
                 this.state.platforms[i] = this.platforms.get(i).getState();
 
@@ -70,10 +72,6 @@ public class GameThread extends Thread {
             }
         }
 
-    }
-
-    public boolean isRunning() {
-        return running;
     }
 
     public GameThread() {
@@ -95,11 +93,17 @@ public class GameThread extends Thread {
         this.state.dimensions[1] = HEIGHT;
         this.running = false;
         this.platforms = new ArrayList<>();
-        this.generatePlatforms();
-        this.state.platforms = new int[this.platforms.size()][3];
+        this.level_modifier_1 = 0.2f;
+        this.level_modifier_2 = 0.5f;
 
-        this.collissionHandler = new CollissionHandler(this.players, this.platforms, WIDTH, HEIGHT);
+        for ( int y = -HEIGHT; y < HEIGHT; y += 100 )
+        {
+            this.generatePlatforms(y);
+        }
+
+        this.state.platforms = new int[this.platforms.size()][3];
         this.no_players = 0;
+        this.score = 0;
     }
 
     @Override
@@ -115,42 +119,135 @@ public class GameThread extends Thread {
         int cX;
         int dx = x2 - x1;
 
-        pwidth = rand.nextInt((int)(0.2 * dx)) + (int)(0.5 * dx);
+        int rand_b = Math.max((int)(level_modifier_1 * dx), 1);
+        pwidth = rand.nextInt(rand_b) + (int)(level_modifier_2 * dx);
         System.err.printf("Platform width: %d\n", pwidth);
         cX = pwidth/2 + rand.nextInt(dx - pwidth) + x1;
         System.err.printf("Platform center: %d\n", cX);
         this.platforms.add(new Platform(cX, y, pwidth));
     }
 
-    public void generatePlatforms()
+    public void generatePlatforms(int y)
     {
         Random rand = new Random(System.currentTimeMillis());
 
-        for ( int y = -this.HEIGHT; y < this.HEIGHT; y += 100 )
-        {
 
-            int n = rand.nextInt(3) + 1;
-            System.err.printf("Random: %d\n", n);
-            int d;
-            switch (n)
+        int n = rand.nextInt(3) + 1;
+        System.err.printf("Random: %d\n", n);
+        int d;
+        switch (n) {
+            case 1:
+                addPlatformBetween(rand, 0, WIDTH, y);
+                break;
+            case 2:
+                d = WIDTH / n;
+                addPlatformBetween(rand, 0, d, y);
+                addPlatformBetween(rand, d, 2 * d, y);
+                break;
+            case 3:
+                d = WIDTH / n;
+                addPlatformBetween(rand, 0, d, y);
+                addPlatformBetween(rand, d, 2 * d, y);
+                addPlatformBetween(rand, 2 * d, 3 * d, y);
+                break;
+            default:
+                break;
+        }
+    }
+
+    void checkCollisions()
+    {
+
+        for ( Player player: players )
+        {
+            //between platforms and players
+            for ( Platform platform: platforms )
             {
-                case 1:
-                    addPlatformBetween(rand, 0, this.WIDTH, y);
-                    break;
-                case 2:
-                    d = WIDTH/n;
-                    addPlatformBetween(rand, 0, d, y );
-                    addPlatformBetween(rand, d, 2*d, y);
-                    break;
-                case 3:
-                    d = WIDTH/n;
-                    addPlatformBetween(rand, 0, d, y );
-                    addPlatformBetween(rand, d, 2*d, y);
-                    addPlatformBetween(rand, 2*d, 3*d, y);
-                    break;
-                default:
-                    break;
+
+                if ( player.body.intersects(platform))
+                {
+                    System.out.println("Collision");
+                    //arriba
+                    if ( player.body.getMaxY() >= platform.getMinY() && player.body.getMaxY() < platform.getMaxY() )
+                    {
+                        player.body.setLocation(player.body.x, platform.y - Player.HW);
+                        player.velY = 0;
+                        player.jumping = false;
+                    }
+                    //abajo
+                    else
+                    {
+                        player.body.setLocation(player.body.x, platform.y + Player.HW);
+                        player.velY = 0.5f;
+                    }
+                }
+            }
+
+            //between players and players
+            for ( Player player1: players)
+            {
+                if ( player == player1 )
+                    continue;
+
+                if ( player.body.intersects(player1.body))
+                {
+                    if ( player.body.getMinY() < player1.body.getMinY() )
+                    {
+                        player.accelerate(0, -5f);
+                        if ( player1.velY < 0 )
+                            player1.velY = 0;
+                    }
+                    else
+                    {
+                        player1.accelerate(0, -5f);
+                        if ( player.velY < 0 )
+                            player.velY = 0;
+                    }
+                }
+            }
+
+            //finally, check bounds
+            if ( player.body.x < 0 )
+            {
+                player.body.x = 0;
+                if (player.velX < 0)
+                    player.velX = 0;
+                player.accelerate( 0.2f, 0 );
+            }
+            else if ( player.body.x > WIDTH - Player.HW )
+            {
+                player.body.x = WIDTH - Player.HW;
+                if (player.velX > 0)
+                    player.velX = 0;
+                player.accelerate( -0.2f, 0 );
             }
         }
+    }
+
+    public void shiftDown ()
+    {
+        score++;
+        LinkedList<Platform> removal = new LinkedList<>();
+        for (Platform platform: platforms)
+        {
+            platform.translate(0, 1);
+
+            if(platform.getMinY() > HEIGHT)
+                removal.add(platform);
+        }
+
+        for ( Player player: players )
+            player.body.translate(0, 1);
+
+        if ( score % 100 == 0 )
+        {
+            this.level_modifier_1 = this.level_modifier_1 > 0 ? this.level_modifier_1 - 0.005f : 0;
+            this.level_modifier_2 = this.level_modifier_2 > 0 ? this.level_modifier_2 - 0.005f : 0;
+            this.generatePlatforms(-HEIGHT);
+        }
+
+        for ( Platform platform: removal )
+            platforms.remove(platform);
+        removal = null;
     }
 }
