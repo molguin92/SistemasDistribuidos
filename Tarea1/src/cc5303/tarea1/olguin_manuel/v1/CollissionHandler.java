@@ -10,11 +10,15 @@ public class CollissionHandler
 
     Player[] players;
     Platform[] platforms;
+    int width;
+    int height;
 
-    public CollissionHandler(Player[] players, Platform[] platforms)
+    public CollissionHandler(Player[] players, Platform[] platforms, int width, int height)
     {
         this.platforms = platforms;
         this.players = players;
+        this.width = width;
+        this.height = height;
     }
 
     void checkCollisions()
@@ -67,6 +71,24 @@ public class CollissionHandler
                     }
                 }
             }
+
+            //finally, check bounds
+            if ( player.body.x < 0 )
+            {
+                player.body.x = 0;
+                if (player.velX < 0)
+                    player.velX = 0;
+                player.accelerate( 0.2f, 0 );
+            }
+            else if ( player.body.x > this.width - Player.HW )
+            {
+                player.body.x = this.width - Player.HW;
+                if (player.velX > 0)
+                    player.velX = 0;
+                player.accelerate( -0.2f, 0 );
+            }
+
+
         }
     }
 }

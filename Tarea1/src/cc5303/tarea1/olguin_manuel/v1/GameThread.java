@@ -88,7 +88,7 @@ public class GameThread extends Thread {
         this.platforms = this.platformGenerator.generatePlatforms();
         this.state.platforms = new int[this.platforms.length][3];
 
-        this.collissionHandler = new CollissionHandler(this.players, this.platforms);
+        this.collissionHandler = new CollissionHandler(this.players, this.platforms, WIDTH, HEIGHT);
         this.no_players = 0;
     }
 
