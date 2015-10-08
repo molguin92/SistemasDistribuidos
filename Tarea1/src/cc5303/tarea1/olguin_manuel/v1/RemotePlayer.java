@@ -13,4 +13,5 @@ public interface RemotePlayer extends Remote
     void moveRight() throws RemoteException;
     int[] getState() throws RemoteException;
     int getID() throws RemoteException;
+    void stop() throws RemoteException;
 }

@@ -1,6 +1,7 @@
 package cc5303.tarea1.olguin_manuel.v1;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * Created by arachnid92 on 08-10-15.
@@ -9,11 +10,11 @@ public class CollissionHandler
 {
 
     Player[] players;
-    Platform[] platforms;
+    ArrayList<Platform> platforms;
     int width;
     int height;
 
-    public CollissionHandler(Player[] players, Platform[] platforms, int width, int height)
+    public CollissionHandler(Player[] players, ArrayList<Platform> platforms, int width, int height)
     {
         this.platforms = platforms;
         this.players = players;
@@ -34,7 +35,7 @@ public class CollissionHandler
                 {
                     System.out.println("Collision");
                     //arriba
-                    if ( player.body.getMaxY() >= platform.getMinY() && player.body.getMaxY() < platform.getCenterY() )
+                    if ( player.body.getMaxY() >= platform.getMinY() && player.body.getMaxY() < platform.getMaxY() )
                     {
                         player.body.setLocation(player.body.x, platform.y - Player.HW);
                         player.velY = 0;
@@ -87,8 +88,17 @@ public class CollissionHandler
                     player.velX = 0;
                 player.accelerate( -0.2f, 0 );
             }
-
-
         }
+    }
+
+    public void shiftDown ()
+    {
+        for (Platform platform: platforms)
+        {
+            platform.translate(0, 1);
+        }
+
+        for ( Player player: players )
+            player.body.translate(0, 1);
     }
 }

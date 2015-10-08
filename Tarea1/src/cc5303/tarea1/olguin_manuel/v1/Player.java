@@ -52,15 +52,19 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     public void moveLeft() throws RemoteException
     {
         System.err.println("Left");
-        if ( this.velX > -2)
-            this.accelerate(-1, 0);
+        this.velX = -1;
     }
     @Override
     public void moveRight() throws RemoteException
     {
         System.err.println("Right");
-        if ( this.velX < 2)
-            this.accelerate(1, 0);
+        this.velX = 1;
+    }
+
+    @Override
+    public void stop() throws RemoteException
+    {
+        this.velX = 0;
     }
 
     public void update()

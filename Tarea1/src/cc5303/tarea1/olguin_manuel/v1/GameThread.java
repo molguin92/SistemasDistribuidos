@@ -1,6 +1,9 @@
 package cc5303.tarea1.olguin_manuel.v1;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Random;
 
 /**
  * Created by arachnid92 on 03-10-15.
@@ -15,9 +18,8 @@ public class GameThread extends Thread {
     private int no_players;
 
     public BoardState state;
-    private PlatformGenerator platformGenerator;
     private Player[] players;
-    private Platform[] platforms;
+    private ArrayList<Platform> platforms;
     private CollissionHandler collissionHandler;
 
     public RemotePlayer activatePlayer() {
@@ -37,11 +39,16 @@ public class GameThread extends Thread {
     public void run() {
         while (running) {
 
+            boolean shift = false;
+
             collissionHandler.checkCollisions();
 
             for (int i = 0; i < players.length; i++) {
                 if (players[i].active)
                     players[i].update();
+
+                if (players[i].body.getMaxY() < 200 )
+                    shift = true;
 
                 try {
                     this.state.players[i] = players[i].getState();
@@ -50,8 +57,11 @@ public class GameThread extends Thread {
                 }
             }
 
-            for ( int i = 0; i < platforms.length; i++ )
-                this.state.platforms[i] = this.platforms[i].getState();
+            if (shift)
+                collissionHandler.shiftDown();
+
+            for ( int i = 0; i < platforms.size(); i++ )
+                this.state.platforms[i] = this.platforms.get(i).getState();
 
             try {
                 Thread.sleep(10);
@@ -84,9 +94,9 @@ public class GameThread extends Thread {
         this.state.dimensions[0] = WIDTH;
         this.state.dimensions[1] = HEIGHT;
         this.running = false;
-        this.platformGenerator = new PlatformGenerator(WIDTH, HEIGHT);
-        this.platforms = this.platformGenerator.generatePlatforms();
-        this.state.platforms = new int[this.platforms.length][3];
+        this.platforms = new ArrayList<>();
+        this.generatePlatforms();
+        this.state.platforms = new int[this.platforms.size()][3];
 
         this.collissionHandler = new CollissionHandler(this.players, this.platforms, WIDTH, HEIGHT);
         this.no_players = 0;
@@ -98,4 +108,49 @@ public class GameThread extends Thread {
         super.start();
     }
 
+    private void addPlatformBetween ( Random rand,int x1, int x2, int y)
+    {
+        System.err.printf("Adding platform between %d and %d\n", x1, x2);
+        int pwidth;
+        int cX;
+        int dx = x2 - x1;
+
+        pwidth = rand.nextInt((int)(0.2 * dx)) + (int)(0.5 * dx);
+        System.err.printf("Platform width: %d\n", pwidth);
+        cX = pwidth/2 + rand.nextInt(dx - pwidth) + x1;
+        System.err.printf("Platform center: %d\n", cX);
+        this.platforms.add(new Platform(cX, y, pwidth));
+    }
+
+    public void generatePlatforms()
+    {
+        Random rand = new Random(System.currentTimeMillis());
+
+        for ( int y = -this.HEIGHT; y < this.HEIGHT; y += 100 )
+        {
+
+            int n = rand.nextInt(3) + 1;
+            System.err.printf("Random: %d\n", n);
+            int d;
+            switch (n)
+            {
+                case 1:
+                    addPlatformBetween(rand, 0, this.WIDTH, y);
+                    break;
+                case 2:
+                    d = WIDTH/n;
+                    addPlatformBetween(rand, 0, d, y );
+                    addPlatformBetween(rand, d, 2*d, y);
+                    break;
+                case 3:
+                    d = WIDTH/n;
+                    addPlatformBetween(rand, 0, d, y );
+                    addPlatformBetween(rand, d, 2*d, y);
+                    addPlatformBetween(rand, 2*d, 3*d, y);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
 }

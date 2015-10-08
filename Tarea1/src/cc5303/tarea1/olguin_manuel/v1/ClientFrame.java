@@ -36,9 +36,14 @@ public class ClientFrame extends JFrame
         input.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "RIGHT");
         input.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "JUMP");
 
+        input.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0, true), "STOP");
+        input.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0, true), "STOP");
+
+
         content.getActionMap().put("LEFT", new leftAction());
         content.getActionMap().put("RIGHT", new rightAction());
         content.getActionMap().put("JUMP", new jumpAction());
+        content.getActionMap().put("STOP", new stopAction());
 
         pack();
         setVisible(true);
@@ -84,6 +89,18 @@ public class ClientFrame extends JFrame
         public void actionPerformed(ActionEvent e) {
             try {
                 player.jump();
+            } catch (RemoteException e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
+
+    class stopAction extends AbstractAction
+    {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                player.stop();
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }
