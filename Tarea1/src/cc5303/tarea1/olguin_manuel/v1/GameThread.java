@@ -26,10 +26,13 @@ public class GameThread extends Thread {
     public RemotePlayer activatePlayer() {
         for (Player player : players) {
 
-            if (!player.active) {
+            if (!player.active)
+            {
+                Random rng = new Random(System.currentTimeMillis());
                 no_players++;
                 player.ID = no_players;
                 player.active = true;
+                player.body.setLocation( rng.nextInt(WIDTH - 20) + 10, HEIGHT - 50 );
                 return player;
             }
         }
@@ -46,8 +49,10 @@ public class GameThread extends Thread {
 
             for (int i = 0; i < players.length; i++) {
                 if (players[i].active)
+                {
                     players[i].update();
-
+                    players[i].score = this.score;
+                }
                 if (players[i].body.getMaxY() < 200 )
                     shift = true;
 
@@ -100,6 +105,7 @@ public class GameThread extends Thread {
         {
             this.generatePlatforms(y);
         }
+        this.platforms.add(new Platform(WIDTH/2, HEIGHT - 2*Platform.THICKNESS, 2*WIDTH));
 
         this.state.platforms = new int[this.platforms.size()][3];
         this.no_players = 0;
@@ -160,6 +166,10 @@ public class GameThread extends Thread {
 
         for ( Player player: players )
         {
+
+            if (!player.active)
+                continue;
+
             //between platforms and players
             for ( Platform platform: platforms )
             {
@@ -186,7 +196,7 @@ public class GameThread extends Thread {
             //between players and players
             for ( Player player1: players)
             {
-                if ( player == player1 )
+                if ( player == player1 || !player1.active )
                     continue;
 
                 if ( player.body.intersects(player1.body))
@@ -220,6 +230,12 @@ public class GameThread extends Thread {
                 if (player.velX > 0)
                     player.velX = 0;
                 player.accelerate( -0.2f, 0 );
+            }
+
+            if ( player.body.getMinY() > HEIGHT )
+            {
+                System.out.println ( "PLAYER OUT" );
+                player.active = false;
             }
         }
     }

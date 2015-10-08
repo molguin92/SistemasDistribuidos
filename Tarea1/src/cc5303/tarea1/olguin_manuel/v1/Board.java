@@ -43,16 +43,26 @@ public class Board extends Canvas {
 
         for ( int[] player : players )
         {
-
-            if ( player[3] == 0 ) //no activo
-                continue;
-
             if ( player[4] == this.playerID )
             {
                 buffer.setColor(Color.RED);
-            } else { buffer.setColor(Color.BLUE); }
+                buffer.fillRect(player[0], player[1], player[2], player[2]);
+                System.out.println("SCORE: " + player[5]);
+                if( player[3] == 0 )
+                {
+                    System.out.println("SCORE: " + player[5]);
+                    System.out.println("GAME OVER");
+                    System.exit(0);
+                }
 
-            buffer.fillRect(player[0], player[1], player[2], player[2]);
+            } else
+            {
+                if ( player[3] != 0 )
+                {//no activo
+                    buffer.setColor(Color.BLUE);
+                    buffer.fillRect(player[0], player[1], player[2], player[2]);
+                }
+            }
         }
 
         buffer.setColor(Color.WHITE);

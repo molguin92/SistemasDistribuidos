@@ -28,6 +28,8 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     private static final int MLEFT = 1;
     private static final int MRIGHT = 2;
 
+    public int score;
+
     public void accelerate( float X, float Y )
     {
         this.velX += X;
@@ -78,7 +80,7 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     {
         int active = this.active ? 1 : 0;
 
-        return new int[]{this.body.x, this.body.y, HW, active, this.ID};
+        return new int[]{this.body.x, this.body.y, HW, active, this.ID, this.score};
     }
 
     @Override
