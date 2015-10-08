@@ -70,7 +70,7 @@ public class GameThread extends Thread {
         this.players = new Player[4];
         for (int i = 0; i < this.players.length; i++)
             try {
-                this.players[i] = new Player(0, HEIGHT - 30);
+                this.players[i] = new Player(WIDTH/2, HEIGHT/2);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }

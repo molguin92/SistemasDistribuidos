@@ -1,10 +1,10 @@
 package cc5303.tarea1.olguin_manuel.v1;
 
-import java.awt.Color;
+import org.w3c.dom.css.Rect;
+
+import java.awt.*;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * Created by arachnid92 on 03-10-15.
@@ -15,17 +15,14 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     public static int HW = 10;
 
     public int ID;
+    public Rectangle body;
 
-    public int posX;
-    public int posY;
     public float velX;
     public float velY;
 
     public boolean ready;
-    public boolean standing;
+    public boolean jumping;
     public boolean active;
-
-    private Queue<Integer> ops;
 
     private static final int JUMP = 0;
     private static final int MLEFT = 1;
@@ -40,12 +37,14 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     @Override
     public void jump() throws RemoteException
     {
-        if (standing)
+        this.ready = true;
+        if (!this.jumping)
         {
             System.err.println("Jumping");
-            standing = false;
-            this.posY += 2;
-            this.accelerate(0, -5.5f);
+            this.jumping = true;
+            this.body.translate(0, -2);
+            this.velY = 0;
+            this.accelerate(0, -5f);
         }
     }
 
@@ -53,31 +52,21 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     public void moveLeft() throws RemoteException
     {
         System.err.println("Left");
-        if ( this.velX > -4)
+        if ( this.velX > -2)
             this.accelerate(-1, 0);
     }
     @Override
     public void moveRight() throws RemoteException
     {
         System.err.println("Right");
-        if ( this.velX < 4)
+        if ( this.velX < 2)
             this.accelerate(1, 0);
     }
 
     public void update()
     {
-
-        this.posX += (int)this.velX;
-        this.posY += (int)this.velY;
-
-        if ( !this.standing ) {
-            this.velY += 0.1;
-        } else {
-            if ( this.velX < 0 )
-                this.velX += 0.5;
-            else if ( this.velX > 0 )
-                this.velX -= 0.5;
-        }
+        this.body.translate((int)this.velX, (int)this.velY);
+        this.velY += 0.1;
     }
 
     @Override
@@ -85,7 +74,7 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     {
         int active = this.active ? 1 : 0;
 
-        return new int[]{posX, posY, HW, active, this.ID};
+        return new int[]{this.body.x, this.body.y, HW, active, this.ID};
     }
 
     @Override
@@ -103,15 +92,13 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     {
         super();
 
-        this.posX = posX;
-        this.posY = posY;
-
         this.velX = 0;
         this.velY = 0;
 
-        this.ops = new LinkedList<>();
-
-        this.standing = true;
+        this.jumping = false;
         this.active = false;
+        this.ready = false;
+
+        this.body = new Rectangle( posX, posY, Player.HW, Player.HW  );
     }
 }

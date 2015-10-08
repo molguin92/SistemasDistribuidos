@@ -1,5 +1,7 @@
 package cc5303.tarea1.olguin_manuel.v1;
 
+import java.awt.*;
+
 /**
  * Created by arachnid92 on 08-10-15.
  */
@@ -22,30 +24,22 @@ public class CollissionHandler
         {
             for ( Platform platform: platforms )
             {
-                if ( player.posX >= (platform.posX - (platform.width/2)) && player.posX <= (platform.posX + (platform.width/2)))
+
+                if ( player.body.intersects(platform))
                 {
-
-                    int dy = Math.abs( player.posY - platform.posY );
-                    int threshold = (Platform.THICKNESS + Player.HW)/2;
-                    if ( dy <= threshold )
+                    System.out.println("Collision");
+                    //arriba
+                    if ( player.body.getMaxY() >= platform.getMinY() && player.body.getMaxY() < platform.getCenterY() )
                     {
-                        if ( player.standing )
-                            continue;
-
-                        System.err.println ( "COLLISION" );
-                        if ( player.posY <= platform.posY  )
-                        {
-                            // on top
-                            player.posY = platform.posY - threshold - 5;
-                            player.standing = true;
-                            player.velY = 0;
-                        }
-                        else
-                        {
-                            // under
-                            player.posY = platform.posY + threshold + 1;
-                            player.velY = 1;
-                        }
+                        player.body.setLocation(player.body.x, platform.y - Player.HW);
+                        player.velY = 0;
+                        player.jumping = false;
+                    }
+                    //abajo
+                    else
+                    {
+                        player.body.setLocation(player.body.x, platform.y + Player.HW);
+                        player.velY = 0.5f;
                     }
                 }
             }

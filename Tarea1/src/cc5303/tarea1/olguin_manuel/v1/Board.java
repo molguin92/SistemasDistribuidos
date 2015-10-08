@@ -52,12 +52,12 @@ public class Board extends Canvas {
                 buffer.setColor(Color.RED);
             } else { buffer.setColor(Color.BLUE); }
 
-            buffer.fillRect(player[0] - player[2]/2, player[1] - player[2]/2, player[2], player[2]);
+            buffer.fillRect(player[0], player[1], player[2], player[2]);
         }
 
         buffer.setColor(Color.WHITE);
         for (int[] platform : platforms) {
-            buffer.fillRect(platform[0] - (platform[2] / 2), platform[1] - platform[3] / 2, platform[2], platform[3]);
+            buffer.fillRect(platform[0], platform[1], platform[2], platform[3]);
         }
 
         g.drawImage(img, 0, 0, null);

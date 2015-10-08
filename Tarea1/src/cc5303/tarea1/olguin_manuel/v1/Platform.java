@@ -1,27 +1,27 @@
 package cc5303.tarea1.olguin_manuel.v1;
 
+import org.w3c.dom.css.Rect;
+
+import java.awt.*;
+
 /**
  * Created by arachnid92 on 06-10-15.
  */
-public class Platform
+public class Platform extends Rectangle
 {
 
     public static int THICKNESS = 10;
-
-    public int posX;
-    public int posY;
-    public int width;
+    private int width;
 
     public Platform ( int centerX, int centerY, int width )
     {
-        this.posX = centerX;
-        this.posY = centerY;
+        super(centerX - width/2, centerY - THICKNESS/2, width, THICKNESS);
         this.width = width;
     }
 
     public int[] getState ()
     {
-        return new int[] {posX, posY, width, Platform.THICKNESS};
+        return new int[] {this.x, this.y, width, THICKNESS };
     }
 
 }

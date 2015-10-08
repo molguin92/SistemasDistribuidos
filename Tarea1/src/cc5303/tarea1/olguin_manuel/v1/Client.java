@@ -20,7 +20,6 @@ public class Client
         RemoteGameInterface remote;
         RemotePlayer player;
         RemoteBoardState state;
-        JFrame frame;
         Board board;
 
         try {
@@ -32,7 +31,7 @@ public class Client
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     try {
-                        ClientFrame frame = new ClientFrame(player, board, state.getDimensions());
+                        new ClientFrame(player, board, state.getDimensions());
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
