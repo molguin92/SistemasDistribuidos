@@ -1,7 +1,6 @@
 package cc5303.tarea1.olguin_manuel.v1;
 
 import java.net.MalformedURLException;
-import java.rmi.AlreadyBoundException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 
@@ -14,8 +13,18 @@ public class GameServer {
 
     public static void main ( String[] args )
     {
+        String IP = args[0];
+        int n_players = 2;
+        boolean together = false;
+        System.setProperty("java.rmi.server.hostname", IP);
 
-        GameThread game = new GameThread();
+        if ( args[1].equalsIgnoreCase("-n") && args.length > 2 )
+        {
+            n_players = Integer.parseInt(args[2]);
+            together = true;
+        }
+
+        GameThread game = new GameThread(n_players, together);
         RemoteGameInterface rinter = null;
         try {
             rinter = new RemoteGameHandler(game);

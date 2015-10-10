@@ -29,6 +29,7 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     private static final int MRIGHT = 2;
 
     public int score;
+    public int lives;
 
     public void accelerate( float X, float Y )
     {
@@ -80,7 +81,7 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     {
         int active = this.active ? 1 : 0;
 
-        return new int[]{this.body.x, this.body.y, HW, active, this.ID, this.score};
+        return new int[]{this.body.x, this.body.y, HW, active, this.ID, this.score, this.lives};
     }
 
     @Override
@@ -104,6 +105,8 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
         this.jumping = false;
         this.active = false;
         this.ready = false;
+        this.score = 0;
+        this.lives = 4;
 
         this.body = new Rectangle( posX, posY, Player.HW, Player.HW  );
     }

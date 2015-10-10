@@ -2,6 +2,7 @@ package cc5303.tarea1.olguin_manuel.v1;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -15,9 +16,12 @@ public class GameThread extends Thread {
 
     private boolean running;
     private int no_players;
+    private int target_no_players;
     private int score;
     private float level_modifier_1;
     private float level_modifier_2;
+
+    private boolean together;
 
     public BoardState state;
     private Player[] players;
@@ -28,11 +32,16 @@ public class GameThread extends Thread {
 
             if (!player.active)
             {
+
+                if ( together && no_players == target_no_players )
+                    return null;
+
                 Random rng = new Random(System.currentTimeMillis());
                 no_players++;
                 player.ID = no_players;
                 player.active = true;
                 player.body.setLocation( rng.nextInt(WIDTH - 20) + 10, HEIGHT - 50 );
+
                 return player;
             }
         }
@@ -43,10 +52,24 @@ public class GameThread extends Thread {
     public void run() {
         while (running) {
 
+            if ( no_players < target_no_players && together ) {
+                this.state.players = new int[1][7];
+                Arrays.fill(this.state.players[0], -1);
+
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                continue;
+            }
+
             boolean shift = false;
 
             this.checkCollisions();
 
+            this.state.players = new int[players.length][0];
             for (int i = 0; i < players.length; i++) {
                 if (players[i].active)
                 {
@@ -79,8 +102,12 @@ public class GameThread extends Thread {
 
     }
 
-    public GameThread() {
-        this.players = new Player[4];
+    public GameThread( int n_players, boolean together  ) {
+
+        this.target_no_players = n_players;
+        this.together = together;
+
+        this.players = new Player[n_players];
         for (int i = 0; i < this.players.length; i++)
             try {
                 this.players[i] = new Player(WIDTH/2, HEIGHT/2);
@@ -92,7 +119,7 @@ public class GameThread extends Thread {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-        this.state.players = new int[4][4];
+        this.state.players = new int[4][7];
         this.state.dimensions = new int[2];
         this.state.dimensions[0] = WIDTH;
         this.state.dimensions[1] = HEIGHT;
@@ -235,7 +262,11 @@ public class GameThread extends Thread {
             if ( player.body.getMinY() > HEIGHT )
             {
                 System.out.println ( "PLAYER OUT" );
-                player.active = false;
+                player.lives--;
+                player.body.setLocation(platforms.get(5).x, platforms.get(5).y + Player.HW);
+                player.velY = -1;
+                if ( player.lives <= 0)
+                    player.active = false;
             }
         }
     }

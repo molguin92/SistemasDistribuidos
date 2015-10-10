@@ -17,6 +17,7 @@ public class Board extends Canvas {
     {
         this.playerID = ID;
         this.state = state;
+        this.setFont(new Font("SCORE", Font.BOLD, 16));
     }
 
     @Override
@@ -29,9 +30,12 @@ public class Board extends Canvas {
             buffer = img.getGraphics();
         }
 
+        int score = 0;
+        int lives = 0;
+
         buffer.setColor(Color.black);
         buffer.fillRect(0, 0, getWidth(), getHeight());
-        int[][] players = new int[4][5];
+        int[][] players = new int[4][7];
         int[][] platforms = new int[0][0];
 
         try {
@@ -43,11 +47,24 @@ public class Board extends Canvas {
 
         for ( int[] player : players )
         {
+
+            if ( player[6] == -1 )
+            {
+                //ESPERANDO A MAS JUGADORES;
+                buffer.setColor(Color.CYAN);
+                buffer.drawString("ESPERANDO... ", 25, 200);
+                g.drawImage(img, 0, 0, null);
+                return;
+            }
+
             if ( player[4] == this.playerID )
             {
                 buffer.setColor(Color.RED);
                 buffer.fillRect(player[0], player[1], player[2], player[2]);
                 System.out.println("SCORE: " + player[5]);
+                score = player[5];
+                lives = player[6];
+
                 if( player[3] == 0 )
                 {
                     System.out.println("SCORE: " + player[5]);
@@ -69,6 +86,11 @@ public class Board extends Canvas {
         for (int[] platform : platforms) {
             buffer.fillRect(platform[0], platform[1], platform[2], platform[3]);
         }
+
+        //score y vidas se dibujan al final para quedar SOBRE lo demas
+        buffer.setColor(Color.CYAN);
+        buffer.drawString("SCORE: " + score, 25, 25);
+        buffer.drawString("LIVES: " + lives, 25, 50);
 
         g.drawImage(img, 0, 0, null);
     }

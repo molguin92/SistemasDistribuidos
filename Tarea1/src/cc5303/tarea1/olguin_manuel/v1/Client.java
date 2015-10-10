@@ -16,6 +16,8 @@ public class Client
 
     public static void main ( String[] args )
     {
+        String IP = args[0];
+        System.setProperty("java.rmi.server.hostname", IP);
 
         RemoteGameInterface remote;
         RemotePlayer player;
@@ -23,9 +25,15 @@ public class Client
         Board board;
 
         try {
-            remote = (RemoteGameInterface) Naming.lookup(GameServer.urlServer);
+            remote = (RemoteGameInterface) Naming.lookup("rmi://" + IP + ":1099/gameserver");
             state = remote.getBoardState();
             player = remote.getPlayer();
+            if ( player == null )
+            {
+                System.err.println("Max amount of players reached!");
+                System.exit(69);
+            }
+
             board = new Board(state, player.getID());
 
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
