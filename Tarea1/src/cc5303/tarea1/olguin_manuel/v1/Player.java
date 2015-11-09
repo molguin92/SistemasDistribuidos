@@ -12,6 +12,8 @@ import java.rmi.server.UnicastRemoteObject;
 public class Player extends UnicastRemoteObject implements RemotePlayer
 {
 
+    // the logical representation of the player in the game
+
     public static int HW = 10;
 
     public int ID;

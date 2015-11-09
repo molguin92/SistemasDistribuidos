@@ -10,8 +10,6 @@ public class BoardState extends UnicastRemoteObject implements RemoteBoardState
 {
     public int[][] players;
     public int[][] platforms;
-    public int level;
-    public int[] lives;
     public int[] dimensions;
 
     protected BoardState() throws RemoteException {

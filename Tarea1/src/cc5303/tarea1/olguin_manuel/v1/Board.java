@@ -1,23 +1,32 @@
 package cc5303.tarea1.olguin_manuel.v1;
 
+import sun.plugin.javascript.navig.Array;
+
 import java.awt.*;
 import java.rmi.RemoteException;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
-/**
- * Created by sebablasko on 9/11/15.
- */
 public class Board extends Canvas {
+
+    //Classs in charge of getting information from the remote interface,
+    //and drawing it on screen.
 
     public Image img;
     public Graphics buffer;
     public RemoteBoardState state;
     public int playerID;
+    private ScoreComparator scoreComparator;
+    private PriorityQueue<int[]> pqueue;
 
     public Board(RemoteBoardState state, int ID)
     {
         this.playerID = ID;
         this.state = state;
         this.setFont(new Font("SCORE", Font.BOLD, 16));
+        this.scoreComparator = new ScoreComparator();
+        this.pqueue = new PriorityQueue<>(4, scoreComparator);
     }
 
     @Override
@@ -59,23 +68,26 @@ public class Board extends Canvas {
 
             if ( player[4] == this.playerID )
             {
+                if( player[3] == 0 )
+                {
+                    // game over... ahora hay que mostrar una scoreboard
+                    System.out.println("SCORE: " + player[5]);
+                    System.out.println("GAME OVER");
+
+                    this.paint_gameover(players, g);
+                    return;
+                }
+
+                // el propio jugador tiene un color distinto
                 buffer.setColor(Color.RED);
                 buffer.fillRect(player[0], player[1], player[2], player[2]);
                 System.out.println("SCORE: " + player[5]);
                 score = player[5];
                 lives = player[6];
-
-                if( player[3] == 0 )
-                {
-                    System.out.println("SCORE: " + player[5]);
-                    System.out.println("GAME OVER");
-                    System.exit(0);
-                }
-
             } else
             {
                 if ( player[3] != 0 )
-                {//no activo
+                {
                     buffer.setColor(Color.BLUE);
                     buffer.fillRect(player[0], player[1], player[2], player[2]);
                 }
@@ -93,5 +105,40 @@ public class Board extends Canvas {
         buffer.drawString("LIVES: " + lives, 25, 50);
 
         g.drawImage(img, 0, 0, null);
+    }
+
+    private void paint_gameover(int[][] players, Graphics g)
+    {
+        pqueue.addAll(Arrays.asList(players));
+        buffer.setColor(Color.black);
+        buffer.fillRect(0, 0, getWidth(), getHeight());
+        buffer.setColor(Color.CYAN);
+        int y = 200;
+        buffer.drawString("SCOREBOARD: ", 25, y);
+        while (!pqueue.isEmpty())
+        {
+            y += 20;
+            int[] p_state = pqueue.poll();
+
+            if ( p_state[4] == this.playerID )
+                buffer.drawString("YOU: " + p_state[5] + "", 25, y);
+            else
+                buffer.drawString("Player " + p_state[4] + ": " + p_state[5] + "", 25, y);
+        }
+
+        g.drawImage(img, 0, 0, null);
+    }
+
+    private class ScoreComparator implements Comparator<int[]> {
+        @Override
+        public int compare(int[] p_state1, int[] p_state2) {
+            // comparing is done "in reverse" for the priority queue
+            if(p_state1[5] < p_state2[5])
+                return 1;
+            else if (p_state1[5] == p_state2[5] )
+                return 0;
+            else
+                return -1;
+        }
     }
 }

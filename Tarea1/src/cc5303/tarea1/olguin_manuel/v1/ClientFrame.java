@@ -12,6 +12,9 @@ import java.rmi.RemoteException;
  */
 public class ClientFrame extends JFrame
 {
+
+    // Frame of the client, takes care of registering keystrokes.
+
     Board board;
     RemotePlayer player;
     Timer board_update;

@@ -9,6 +9,11 @@ import java.rmi.RemoteException;
  */
 public class GameServer {
 
+    // Main class of the server.
+    // Must be executed with the ip of the server as first parameter.
+
+    // Optional parameter: -n 4 (wait for 4 and start!)
+
     static String urlServer = "rmi://localhost:1099/gameserver";
 
     public static void main ( String[] args )
@@ -41,6 +46,12 @@ public class GameServer {
             e.printStackTrace();
         } catch (MalformedURLException e) {
             // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        try {
+            game.join();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 

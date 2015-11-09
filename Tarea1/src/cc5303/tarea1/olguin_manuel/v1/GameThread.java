@@ -11,10 +11,13 @@ import java.util.Random;
  */
 public class GameThread extends Thread {
 
+    // Thread in charge of the logic of the game!
+
     private static int WIDTH = 200;
     private static int HEIGHT = 600;
 
     private boolean running;
+    private boolean started;
     private int no_players;
     private int target_no_players;
     private int score;
@@ -28,19 +31,24 @@ public class GameThread extends Thread {
     private ArrayList<Platform> platforms;
 
     public RemotePlayer activatePlayer() {
+
+        // Activates a player for use by a remote client.
+
         for (Player player : players) {
 
-            if (!player.active)
-            {
+            if (!player.active) {
 
-                if ( together && no_players == target_no_players )
+                if (together && no_players == target_no_players)
                     return null;
 
                 Random rng = new Random(System.currentTimeMillis());
                 no_players++;
                 player.ID = no_players;
                 player.active = true;
-                player.body.setLocation( rng.nextInt(WIDTH - 20) + 10, HEIGHT - 50 );
+                player.body.setLocation(rng.nextInt(WIDTH - 20) + 10, HEIGHT - 50);
+
+                if ( no_players == target_no_players )
+                    started = true;
 
                 return player;
             }
@@ -52,7 +60,9 @@ public class GameThread extends Thread {
     public void run() {
         while (running) {
 
-            if ( no_players < target_no_players && together ) {
+            if (!started && together) {
+
+                // run together! wait for a minimum amount of players
                 this.state.players = new int[1][7];
                 Arrays.fill(this.state.players[0], -1);
 
@@ -65,18 +75,19 @@ public class GameThread extends Thread {
                 continue;
             }
 
+            // next, we update all the objects
+
             boolean shift = false;
 
             this.checkCollisions();
 
             this.state.players = new int[players.length][0];
             for (int i = 0; i < players.length; i++) {
-                if (players[i].active)
-                {
+                if (players[i].active) {
                     players[i].update();
                     players[i].score = this.score;
                 }
-                if (players[i].body.getMaxY() < 200 )
+                if (players[i].body.getMaxY() < 200)
                     shift = true;
 
                 try {
@@ -90,7 +101,7 @@ public class GameThread extends Thread {
                 this.shiftDown();
 
             this.state.platforms = new int[this.platforms.size()][0];
-            for ( int i = 0; i < platforms.size(); i++ )
+            for (int i = 0; i < platforms.size(); i++)
                 this.state.platforms[i] = this.platforms.get(i).getState();
 
             try {
@@ -102,15 +113,16 @@ public class GameThread extends Thread {
 
     }
 
-    public GameThread( int n_players, boolean together  ) {
+    public GameThread(int n_players, boolean together) {
 
         this.target_no_players = n_players;
         this.together = together;
 
         this.players = new Player[n_players];
         for (int i = 0; i < this.players.length; i++)
+            // create inactive players
             try {
-                this.players[i] = new Player(WIDTH/2, HEIGHT/2);
+                this.players[i] = new Player(WIDTH / 2, HEIGHT / 2);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -124,15 +136,17 @@ public class GameThread extends Thread {
         this.state.dimensions[0] = WIDTH;
         this.state.dimensions[1] = HEIGHT;
         this.running = false;
+        this.started = false;
         this.platforms = new ArrayList<>();
         this.level_modifier_1 = 0.2f;
         this.level_modifier_2 = 0.5f;
 
-        for ( int y = -HEIGHT; y < HEIGHT; y += 100 )
-        {
+        for (int y = -HEIGHT; y < HEIGHT; y += 100) {
+            // generate random platforms
             this.generatePlatforms(y);
         }
-        this.platforms.add(new Platform(WIDTH/2, HEIGHT - 2*Platform.THICKNESS, 2*WIDTH));
+        //add special ground platform
+        this.platforms.add(new Platform(WIDTH / 2, HEIGHT - 2 * Platform.THICKNESS, 2 * WIDTH));
 
         this.state.platforms = new int[this.platforms.size()][3];
         this.no_players = 0;
@@ -145,26 +159,27 @@ public class GameThread extends Thread {
         super.start();
     }
 
-    private void addPlatformBetween ( Random rand,int x1, int x2, int y)
-    {
+    private void addPlatformBetween(Random rand, int x1, int x2, int y) {
+        // adds a level of platforms at Y.
+        // the distribution of the platforms is random.
         System.err.printf("Adding platform between %d and %d\n", x1, x2);
         int pwidth;
         int cX;
         int dx = x2 - x1;
 
-        int rand_b = Math.max((int)(level_modifier_1 * dx), 1);
-        pwidth = rand.nextInt(rand_b) + (int)(level_modifier_2 * dx);
+        int rand_b = Math.max((int) (level_modifier_1 * dx), 1);
+        pwidth = rand.nextInt(rand_b) + (int) (level_modifier_2 * dx);
         System.err.printf("Platform width: %d\n", pwidth);
-        cX = pwidth/2 + rand.nextInt(dx - pwidth) + x1;
+        cX = pwidth / 2 + rand.nextInt(dx - pwidth) + x1;
         System.err.printf("Platform center: %d\n", cX);
         this.platforms.add(new Platform(cX, y, pwidth));
     }
 
-    public void generatePlatforms(int y)
-    {
+    public void generatePlatforms(int y) {
+
+        // initializes a random playing field.
+
         Random rand = new Random(System.currentTimeMillis());
-
-
         int n = rand.nextInt(3) + 1;
         System.err.printf("Random: %d\n", n);
         int d;
@@ -188,32 +203,26 @@ public class GameThread extends Thread {
         }
     }
 
-    void checkCollisions()
-    {
+    void checkCollisions() {
 
-        for ( Player player: players )
-        {
+        for (Player player : players) {
 
             if (!player.active)
                 continue;
 
             //between platforms and players
-            for ( Platform platform: platforms )
-            {
+            for (Platform platform : platforms) {
 
-                if ( player.body.intersects(platform))
-                {
+                if (player.body.intersects(platform)) {
                     System.out.println("Collision");
                     //arriba
-                    if ( player.body.getMaxY() >= platform.getMinY() && player.body.getMaxY() < platform.getMaxY() )
-                    {
+                    if (player.body.getMaxY() >= platform.getMinY() && player.body.getMaxY() < platform.getMaxY()) {
                         player.body.setLocation(player.body.x, platform.y - Player.HW);
                         player.velY = 0;
                         player.jumping = false;
                     }
                     //abajo
-                    else
-                    {
+                    else {
                         player.body.setLocation(player.body.x, platform.y + Player.HW);
                         player.velY = 0.5f;
                     }
@@ -221,79 +230,76 @@ public class GameThread extends Thread {
             }
 
             //between players and players
-            for ( Player player1: players)
-            {
-                if ( player == player1 || !player1.active )
+            for (Player player1 : players) {
+                if (player == player1 || !player1.active)
                     continue;
 
-                if ( player.body.intersects(player1.body))
-                {
-                    if ( player.body.getMinY() < player1.body.getMinY() )
-                    {
+                if (player.body.intersects(player1.body)) {
+                    if (player.body.getMinY() < player1.body.getMinY()) {
                         player.accelerate(0, -5f);
-                        if ( player1.velY < 0 )
+                        if (player1.velY < 0)
                             player1.velY = 0;
-                    }
-                    else
-                    {
+                    } else {
                         player1.accelerate(0, -5f);
-                        if ( player.velY < 0 )
+                        if (player.velY < 0)
                             player.velY = 0;
                     }
                 }
             }
 
             //finally, check bounds
-            if ( player.body.x < 0 )
-            {
+            if (player.body.x < 0) {
                 player.body.x = 0;
                 if (player.velX < 0)
                     player.velX = 0;
-                player.accelerate( 0.2f, 0 );
-            }
-            else if ( player.body.x > WIDTH - Player.HW )
-            {
+                player.accelerate(0.2f, 0);
+            } else if (player.body.x > WIDTH - Player.HW) {
                 player.body.x = WIDTH - Player.HW;
                 if (player.velX > 0)
                     player.velX = 0;
-                player.accelerate( -0.2f, 0 );
+                player.accelerate(-0.2f, 0);
             }
 
-            if ( player.body.getMinY() > HEIGHT )
-            {
-                System.out.println ( "PLAYER OUT" );
+            if (player.body.getMinY() > HEIGHT) {
+                System.out.println("PLAYER OUT");
                 player.lives--;
                 player.body.setLocation(platforms.get(5).x, platforms.get(5).y + Player.HW);
                 player.velY = -1;
-                if ( player.lives <= 0)
+                if (player.lives <= 0) {
                     player.active = false;
+                    this.no_players--;
+                    if (this.no_players <= 0) {
+                        System.out.println("no more players");
+                        this.running = false;
+                    }
+                }
             }
         }
     }
 
-    public void shiftDown ()
-    {
+    public void shiftDown() {
+
+        // shifts the board downwards,
+        // and cleans up platforms that are no longer in view
         score++;
         LinkedList<Platform> removal = new LinkedList<>();
-        for (Platform platform: platforms)
-        {
+        for (Platform platform : platforms) {
             platform.translate(0, 1);
 
-            if(platform.getMinY() > HEIGHT)
+            if (platform.getMinY() > HEIGHT)
                 removal.add(platform);
         }
 
-        for ( Player player: players )
+        for (Player player : players)
             player.body.translate(0, 1);
 
-        if ( score % 100 == 0 )
-        {
+        if (score % 100 == 0) {
             this.level_modifier_1 = this.level_modifier_1 > 0 ? this.level_modifier_1 - 0.005f : 0;
             this.level_modifier_2 = this.level_modifier_2 > 0 ? this.level_modifier_2 - 0.005f : 0;
             this.generatePlatforms(-HEIGHT);
         }
 
-        for ( Platform platform: removal )
+        for (Platform platform : removal)
             platforms.remove(platform);
         removal = null;
     }
