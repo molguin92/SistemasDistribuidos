@@ -11,12 +11,14 @@ public class BoardState extends UnicastRemoteObject implements RemoteBoardState
     public int[][] players;
     public int[][] platforms;
     public int[] dimensions;
+    public boolean gameover;
 
     protected BoardState() throws RemoteException {
         super();
         this.players = new int[4][];
         this.platforms = new int[0][];
         this.dimensions = new int[0];
+        this.gameover = false;
     }
 
     @Override
@@ -33,4 +35,10 @@ public class BoardState extends UnicastRemoteObject implements RemoteBoardState
     public int[] getDimensions() throws RemoteException{
         return dimensions;
     }
+
+    @Override
+    public boolean getGameOver() throws RemoteException{
+        return gameover;
+    }
+
 }

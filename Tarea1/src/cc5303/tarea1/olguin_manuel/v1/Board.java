@@ -19,6 +19,7 @@ public class Board extends Canvas {
     public int playerID;
     private ScoreComparator scoreComparator;
     private PriorityQueue<int[]> pqueue;
+    public boolean request_restart;
 
     public Board(RemoteBoardState state, int ID)
     {
@@ -27,6 +28,7 @@ public class Board extends Canvas {
         this.setFont(new Font("SCORE", Font.BOLD, 16));
         this.scoreComparator = new ScoreComparator();
         this.pqueue = new PriorityQueue<>(4, scoreComparator);
+        this.request_restart = false;
     }
 
     @Override
@@ -77,7 +79,7 @@ public class Board extends Canvas {
                     this.paint_gameover(players, g);
                     return;
                 }
-
+                this.request_restart = false;
                 // el propio jugador tiene un color distinto
                 buffer.setColor(Color.RED);
                 buffer.fillRect(player[0], player[1], player[2], player[2]);
@@ -113,7 +115,7 @@ public class Board extends Canvas {
         buffer.setColor(Color.black);
         buffer.fillRect(0, 0, getWidth(), getHeight());
         buffer.setColor(Color.CYAN);
-        int y = 200;
+        int y = 100;
         buffer.drawString("SCOREBOARD: ", 25, y);
         while (!pqueue.isEmpty())
         {
@@ -121,9 +123,32 @@ public class Board extends Canvas {
             int[] p_state = pqueue.poll();
 
             if ( p_state[4] == this.playerID )
-                buffer.drawString("YOU: " + p_state[5] + "", 25, y);
+                buffer.drawString("You: " + p_state[5] + "", 25, y);
             else
                 buffer.drawString("Player " + p_state[4] + ": " + p_state[5] + "", 25, y);
+        }
+
+        try{
+            if (state.getGameOver())
+            {
+                y += 40;
+                buffer.drawString("GAME OVER", 25, y);
+                y += 40;
+                buffer.drawString("PRESS R TO", 25, y);
+                y += 20;
+                buffer.drawString("PLAY AGAIN!", 25, y);
+                y += 40;
+                if(this.request_restart)
+                {
+                    buffer.drawString("Waiting for ", 25, y);
+                    y += 20;
+                    buffer.drawString("other players", 25, y);
+                    y += 20;
+                    buffer.drawString("...", 25, y);
+                }
+            }
+        } catch (RemoteException e){
+            e.printStackTrace();
         }
 
         g.drawImage(img, 0, 0, null);

@@ -118,6 +118,7 @@ public class ClientFrame extends JFrame
         public void actionPerformed(ActionEvent e) {
             try {
                 player.voteRestart();
+                board.request_restart = true;
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }

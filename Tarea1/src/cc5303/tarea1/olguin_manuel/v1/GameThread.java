@@ -18,7 +18,6 @@ public class GameThread extends Thread {
 
     private boolean running;
     private boolean started;
-    private boolean game_over;
     private int dead_players;
     private int no_players;
     private int target_no_players;
@@ -35,6 +34,9 @@ public class GameThread extends Thread {
     public RemotePlayer activatePlayer() {
 
         // Activates a player for use by a remote client.
+
+        if (started && together)
+            return null;
 
         for (Player player : players) {
 
@@ -115,7 +117,7 @@ public class GameThread extends Thread {
                 e.printStackTrace();
             }
 
-            if (game_over)
+            if (state.gameover)
                 this.GameOver();
         }
 
@@ -146,7 +148,6 @@ public class GameThread extends Thread {
         this.state.dimensions[1] = HEIGHT;
         this.running = false;
         this.started = false;
-        this.game_over = false;
         this.platforms = new ArrayList<>();
         this.level_modifier_1 = 0.2f;
         this.level_modifier_2 = 0.5f;
@@ -280,7 +281,7 @@ public class GameThread extends Thread {
                     this.dead_players++;
                     if (this.no_players == this.dead_players) {
                         System.out.println("no more players alive");
-                        this.game_over = true;
+                        state.gameover = true;
                     }
                 }
             }
@@ -317,13 +318,13 @@ public class GameThread extends Thread {
 
     public void GameOver()
     {
-        while (game_over)
+        while (state.gameover)
         {
             for (Player p: players)
             {
-                game_over = p.restart && game_over;
+                state.gameover = p.restart && state.gameover;
             }
-            game_over = !game_over;
+            state.gameover = !state.gameover;
 
             try {
                 Thread.sleep(10);
@@ -345,8 +346,8 @@ public class GameThread extends Thread {
         this.state.dimensions = new int[2];
         this.state.dimensions[0] = WIDTH;
         this.state.dimensions[1] = HEIGHT;
+        this.state.gameover = false;
         this.started = true;
-        this.game_over = false;
         this.platforms = new ArrayList<>();
         this.level_modifier_1 = 0.2f;
         this.level_modifier_2 = 0.5f;

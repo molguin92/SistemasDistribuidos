@@ -11,4 +11,5 @@ public interface RemoteBoardState extends Remote
     int[][] getPlayers() throws RemoteException;
     int[][] getPlatforms() throws RemoteException;
     int[] getDimensions() throws  RemoteException;
+    boolean getGameOver() throws RemoteException;
 }
