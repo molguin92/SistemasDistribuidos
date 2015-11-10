@@ -14,4 +14,5 @@ public interface RemotePlayer extends Remote
     int[] getState() throws RemoteException;
     int getID() throws RemoteException;
     void stop() throws RemoteException;
+    void voteRestart() throws RemoteException;
 }

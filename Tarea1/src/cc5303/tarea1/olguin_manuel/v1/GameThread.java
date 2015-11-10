@@ -18,6 +18,8 @@ public class GameThread extends Thread {
 
     private boolean running;
     private boolean started;
+    private boolean game_over;
+    private int dead_players;
     private int no_players;
     private int target_no_players;
     private int score;
@@ -83,6 +85,9 @@ public class GameThread extends Thread {
 
             this.state.players = new int[players.length][0];
             for (int i = 0; i < players.length; i++) {
+
+                players[i].restart = false;
+
                 if (players[i].active) {
                     players[i].update();
                     players[i].score = this.score;
@@ -109,6 +114,9 @@ public class GameThread extends Thread {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            if (game_over)
+                this.GameOver();
         }
 
     }
@@ -117,6 +125,7 @@ public class GameThread extends Thread {
 
         this.target_no_players = n_players;
         this.together = together;
+        this.dead_players = 0;
 
         this.players = new Player[n_players];
         for (int i = 0; i < this.players.length; i++)
@@ -137,6 +146,7 @@ public class GameThread extends Thread {
         this.state.dimensions[1] = HEIGHT;
         this.running = false;
         this.started = false;
+        this.game_over = false;
         this.platforms = new ArrayList<>();
         this.level_modifier_1 = 0.2f;
         this.level_modifier_2 = 0.5f;
@@ -267,10 +277,10 @@ public class GameThread extends Thread {
                 player.velY = -1;
                 if (player.lives <= 0) {
                     player.active = false;
-                    this.no_players--;
-                    if (this.no_players <= 0) {
-                        System.out.println("no more players");
-                        this.running = false;
+                    this.dead_players++;
+                    if (this.no_players == this.dead_players) {
+                        System.out.println("no more players alive");
+                        this.game_over = true;
                     }
                 }
             }
@@ -303,4 +313,64 @@ public class GameThread extends Thread {
             platforms.remove(platform);
         removal = null;
     }
+
+
+    public void GameOver()
+    {
+        while (game_over)
+        {
+            for (Player p: players)
+            {
+                game_over = p.restart && game_over;
+            }
+            game_over = !game_over;
+
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        this.resetGameState();
+    }
+
+    public void resetGameState()
+    {
+        System.out.println("Restarting game.");
+        Random rng = new Random(System.currentTimeMillis());
+
+        this.dead_players = 0;
+        this.state.players = new int[4][7];
+        this.state.dimensions = new int[2];
+        this.state.dimensions[0] = WIDTH;
+        this.state.dimensions[1] = HEIGHT;
+        this.started = true;
+        this.game_over = false;
+        this.platforms = new ArrayList<>();
+        this.level_modifier_1 = 0.2f;
+        this.level_modifier_2 = 0.5f;
+
+        for (int y = -HEIGHT; y < HEIGHT; y += 100) {
+            // generate random platforms
+            this.generatePlatforms(y);
+        }
+        //add special ground platform
+        this.platforms.add(new Platform(WIDTH / 2, HEIGHT - 2 * Platform.THICKNESS, 2 * WIDTH));
+
+        this.state.platforms = new int[this.platforms.size()][3];
+        this.score = 0;
+
+        for(int i = 0; i < no_players; i++) {
+            Player p = players[i];
+            System.out.println("Reactivating player " + p.ID);
+            p.active = true;
+            p.score = 0;
+            p.body.setLocation(rng.nextInt(WIDTH - 20) + 10, HEIGHT - 50);
+            p.velY = 0;
+            p.lives = 4;
+        }
+
+    }
+
 }

@@ -1,7 +1,5 @@
 package cc5303.tarea1.olguin_manuel.v1;
 
-import org.w3c.dom.css.Rect;
-
 import java.awt.*;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -19,16 +17,13 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     public int ID;
     public Rectangle body;
 
+    public boolean restart;
+
     public float velX;
     public float velY;
 
-    public boolean ready;
     public boolean jumping;
     public boolean active;
-
-    private static final int JUMP = 0;
-    private static final int MLEFT = 1;
-    private static final int MRIGHT = 2;
 
     public int score;
     public int lives;
@@ -42,7 +37,6 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     @Override
     public void jump() throws RemoteException
     {
-        this.ready = true;
         if (!this.jumping)
         {
             System.err.println("Jumping");
@@ -72,6 +66,11 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
         this.velX = 0;
     }
 
+    @Override
+    public void voteRestart() throws RemoteException {
+        this.restart = true;
+    }
+
     public void update()
     {
         this.body.translate((int)this.velX, (int)this.velY);
@@ -92,11 +91,6 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
         return this.ID;
     }
 
-    public void setReady()
-    {
-        this.ready = true;
-    }
-
     public Player ( int posX, int posY ) throws RemoteException
     {
         super();
@@ -106,7 +100,6 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
 
         this.jumping = false;
         this.active = false;
-        this.ready = false;
         this.score = 0;
         this.lives = 4;
 
