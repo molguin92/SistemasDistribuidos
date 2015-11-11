@@ -11,25 +11,29 @@ import java.util.Random;
  */
 public class GameThread extends Thread {
 
+    // TODO: Implement RemoteBoardState
+
     // Thread in charge of the logic of the game!
 
     private static int WIDTH = 200;
     private static int HEIGHT = 600;
 
-    private boolean running;
-    private boolean started;
-    private int dead_players;
-    private int no_players;
-    private int target_no_players;
-    private int score;
-    private float level_modifier_1;
-    private float level_modifier_2;
+    protected boolean migrate;
+    protected boolean running;
+    protected boolean started;
+    protected int dead_players;
+    protected int no_players;
+    protected int target_no_players;
+    protected int score;
+    protected float level_modifier_1;
+    protected float level_modifier_2;
 
-    private boolean together;
+    protected boolean together;
 
     public BoardState state;
-    private Player[] players;
-    private ArrayList<Platform> platforms;
+    protected Player[] players;
+    protected ArrayList<Platform> platforms;
+
 
     public RemotePlayer activatePlayer() {
 
@@ -63,6 +67,9 @@ public class GameThread extends Thread {
 
     public void run() {
         while (running) {
+
+            if ( migrate )
+                return;
 
             if (!started && together) {
 
@@ -166,7 +173,8 @@ public class GameThread extends Thread {
 
     @Override
     public void start() {
-        running = true;
+        this.running = true;
+        this.migrate = false;
         super.start();
     }
 

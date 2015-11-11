@@ -30,9 +30,9 @@ public class GameServer {
         }
 
         GameThread game = new GameThread(n_players, together);
-        RemoteGameInterface rinter = null;
+        DistributedGameInterface rinter = null;
         try {
-            rinter = new RemoteGameHandler(game);
+            rinter = new DistributedGameHandler(game, new String[1]); // TODO Fix
         } catch (RemoteException e) {
             e.printStackTrace();
         }

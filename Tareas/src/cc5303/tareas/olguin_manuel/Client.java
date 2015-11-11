@@ -20,15 +20,15 @@ public class Client
         String IP = args[0];
         System.setProperty("java.rmi.server.hostname", IP);
 
-        RemoteGameInterface remote;
+        DistributedGameInterface remote;
         RemotePlayer player;
         RemoteBoardState state;
         Board board;
 
         try {
-            remote = (RemoteGameInterface) Naming.lookup("rmi://" + IP + ":1099/gameserver");
+            remote = (DistributedGameInterface) Naming.lookup("rmi://" + IP + ":1099/gameserver");
             state = remote.getBoardState();
-            player = remote.getPlayer();
+            player = remote.getPlayer(-1);
             if ( player == null )
             {
                 System.err.println("Max amount of players reached!");

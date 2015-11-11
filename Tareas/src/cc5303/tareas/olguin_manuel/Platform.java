@@ -11,7 +11,7 @@ public class Platform extends Rectangle
 {
 
     public static int THICKNESS = 10;
-    private int width;
+    public int width;
 
     public Platform ( int centerX, int centerY, int width )
     {
