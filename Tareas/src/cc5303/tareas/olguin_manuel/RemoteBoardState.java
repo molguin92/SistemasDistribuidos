@@ -1,4 +1,4 @@
-package cc5303.tarea1.olguin_manuel.v1;
+package cc5303.tareas.olguin_manuel;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;

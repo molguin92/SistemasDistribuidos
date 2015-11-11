@@ -1,6 +1,4 @@
-package cc5303.tarea1.olguin_manuel.v1;
-
-import sun.plugin.javascript.navig.Array;
+package cc5303.tareas.olguin_manuel;
 
 import java.awt.*;
 import java.rmi.RemoteException;

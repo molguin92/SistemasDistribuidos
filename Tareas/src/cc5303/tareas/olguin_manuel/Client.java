@@ -1,12 +1,9 @@
-package cc5303.tarea1.olguin_manuel.v1;
+package cc5303.tareas.olguin_manuel;
 
-import javax.swing.*;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-
-import static javax.swing.JFrame.EXIT_ON_CLOSE;
 
 /**
  * Created by arachnid92 on 04-10-15.

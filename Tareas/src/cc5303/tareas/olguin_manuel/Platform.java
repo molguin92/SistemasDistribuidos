@@ -1,4 +1,4 @@
-package cc5303.tarea1.olguin_manuel.v1;
+package cc5303.tareas.olguin_manuel;
 
 import org.w3c.dom.css.Rect;
 
