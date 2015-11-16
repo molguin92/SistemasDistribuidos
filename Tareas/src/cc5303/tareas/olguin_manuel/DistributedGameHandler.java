@@ -33,12 +33,6 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     {
         super();
         this.game = game;
-        try {
-            this.file_reader = new FileReader("/proc/loadavg");
-        } catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
         this.servers = servers;
         this.serverlist = new DistributedGameInterface[this.servers.length];
         this.active = false;
@@ -63,10 +57,15 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         // returns the load average for the current server
         String line = "";
         try {
-            file_reader.mark(1000);
+            try {
+                this.file_reader = new FileReader("/proc/loadavg");
+            } catch (FileNotFoundException e)
+            {
+                e.printStackTrace();
+            }
             BufferedReader reader = new BufferedReader(file_reader);
             line = reader.readLine();
-            file_reader.reset();
+            file_reader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
