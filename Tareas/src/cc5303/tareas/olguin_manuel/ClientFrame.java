@@ -2,9 +2,7 @@ package cc5303.tareas.olguin_manuel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.rmi.RemoteException;
 
 /**
@@ -18,6 +16,7 @@ public class ClientFrame extends JFrame
     Board board;
     RemotePlayer player;
     Timer board_update;
+    Timer player_update;
 
     public ClientFrame (RemotePlayer player, Board board, int[] dimensions )
     {
@@ -59,6 +58,38 @@ public class ClientFrame extends JFrame
             public void actionPerformed(ActionEvent e) {
                 board.repaint();
             }
+        });
+
+        //renew player reference every 10 ms
+        this.player_update = new Timer(10, new updatePlayer());
+
+        this.addWindowListener(new WindowListener() {
+            @Override
+            public void windowOpened(WindowEvent e) {}
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    player.leaving();
+                } catch (RemoteException e1) {
+                    e1.printStackTrace();
+                }
+            }
+
+            @Override
+            public void windowClosed(WindowEvent e) {}
+
+            @Override
+            public void windowIconified(WindowEvent e) {}
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {}
+
+            @Override
+            public void windowActivated(WindowEvent e) {}
+
+            @Override
+            public void windowDeactivated(WindowEvent e) {}
         });
 
         this.board_update.start();
@@ -122,6 +153,14 @@ public class ClientFrame extends JFrame
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }
+        }
+    }
+
+    class updatePlayer implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            player = board.renewPlayer();
         }
     }
 

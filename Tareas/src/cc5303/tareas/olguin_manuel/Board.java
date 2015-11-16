@@ -13,27 +13,47 @@ public class Board extends Canvas {
 
     public Image img;
     public Graphics buffer;
-    public RemoteBoardState state;
     public int playerID;
     private ScoreComparator scoreComparator;
     private PriorityQueue<int[]> pqueue;
     public boolean request_restart;
 
-    public Board(RemoteBoardState state, int ID)
+    DistributedGameInterface game;
+
+    public Board(DistributedGameInterface game, int ID)
     {
         this.playerID = ID;
-        this.state = state;
         this.setFont(new Font("SCORE", Font.BOLD, 16));
         this.scoreComparator = new ScoreComparator();
         this.pqueue = new PriorityQueue<>(4, scoreComparator);
         this.request_restart = false;
+        this.game = game;
+    }
+
+    public RemotePlayer renewPlayer()
+    {
+        try {
+            return game.renewPlayer(playerID);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
-    public void update(Graphics g) { paint(g); }
+    public void update(Graphics g) {
+        paint(g);
+    }
 
     @Override
     public void paint(Graphics g){
+
+        try {
+            game = game.renewRemote();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
         if(buffer==null){
             img = createImage(getWidth(),getHeight() );
             buffer = img.getGraphics();
@@ -44,19 +64,19 @@ public class Board extends Canvas {
 
         buffer.setColor(Color.black);
         buffer.fillRect(0, 0, getWidth(), getHeight());
-        int[][] players = new int[4][7];
-        int[][] platforms = new int[0][0];
+        int[][] players = new int[1][1];
+        int[][] platforms = new int[1][1];
 
         try {
-            players = state.getPlayers();
-            platforms = state.getPlatforms();
+            players = game.getPlayers();
+            platforms = game.getPlatforms();
         } catch (RemoteException e) {
             e.printStackTrace();
+            System.exit(-1);
         }
 
         for ( int[] player : players )
         {
-
             if ( player[6] == -1 )
             {
                 //ESPERANDO A MAS JUGADORES;
@@ -127,7 +147,7 @@ public class Board extends Canvas {
         }
 
         try{
-            if (state.getGameOver())
+            if (game.getGameOver())
             {
                 y += 40;
                 buffer.drawString("GAME OVER", 25, y);

@@ -22,29 +22,24 @@ public class Client
 
         DistributedGameInterface remote;
         RemotePlayer player;
-        RemoteBoardState state;
         Board board;
 
         try {
             remote = (DistributedGameInterface) Naming.lookup("rmi://" + IP + ":1099/gameserver");
-            state = remote.getBoardState();
+            remote = remote.renewRemote();
             player = remote.getPlayer(-1);
+            int[] dim = remote.getDimensions();
             if ( player == null )
             {
                 System.err.println("Max amount of players reached!");
                 System.exit(69);
             }
 
-            board = new Board(state, player.getID());
+            board = new Board(remote, player.getID());
 
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    try {
-                        new ClientFrame(player, board, state.getDimensions());
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
-
+                    new ClientFrame(player, board, dim);
                 }
             });
 

@@ -3,6 +3,7 @@ package cc5303.tareas.olguin_manuel;
 import org.w3c.dom.css.Rect;
 
 import java.awt.*;
+import java.rmi.Remote;
 
 /**
  * Created by arachnid92 on 06-10-15.

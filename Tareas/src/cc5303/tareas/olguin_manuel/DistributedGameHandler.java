@@ -9,7 +9,6 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.PriorityQueue;
@@ -25,10 +24,12 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     GameThread game;
     FileReader file_reader;
     DistributedGameInterface[] serverlist;
+    DistributedGameInterface current;
     private String[] servers;
     public boolean active;
+    public String own_ip;
 
-    public DistributedGameHandler(GameThread game, String[] servers ) throws RemoteException
+    public DistributedGameHandler(GameThread game, String[] servers, String own_ip) throws RemoteException
     {
         super();
         this.game = game;
@@ -41,16 +42,20 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         this.servers = servers;
         this.serverlist = new DistributedGameInterface[this.servers.length];
         this.active = false;
+        this.own_ip = own_ip;
+    }
+
+    @Override
+    public String getIP() throws RemoteException
+    {
+        return own_ip;
     }
 
     @Override
     public RemotePlayer getPlayer(int playerID) throws RemoteException {
+        if ( !current.equals(this) )
+            return current.getPlayer(playerID);
         return game.activatePlayer();
-    }
-
-    @Override
-    public RemoteBoardState getBoardState() throws RemoteException {
-        return game.state;
     }
 
     @Override
@@ -73,22 +78,39 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     public void initConnections() throws RemoteException {
         // initiates the connections to the other servers,
         // to set up the distributed system.
-        for ( int i = 0; i < servers.length; i++ )
-        {
-            try{
-            serverlist[i] = (DistributedGameInterface) Naming.lookup("rmi://" + servers[i] + ":1099/gameserver");
-            } catch (RemoteException | MalformedURLException | NotBoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+        System.err.println("Initializing connections...");
+        boolean not_connected;
+        for ( int i = 0; i < servers.length; i++ ) {
+            not_connected = true;
+            while (not_connected)
+            {
+                try {
+                    serverlist[i] = (DistributedGameInterface) Naming.lookup("rmi://" + servers[i] + ":1099/gameserver");
+                    not_connected = false;
+                } catch (RemoteException | MalformedURLException | NotBoundException e) {
+                    System.err.println(servers[i] + " is not yet ready...");
+                    not_connected = true;
+                }
+                System.err.println(servers[i] + " successfully connected!");
+
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
+        serverlist[0].activate();
+        System.err.println("All systems connected and ready.");
     }
 
     @Override
     public void activate() throws RemoteException {
-        this.active = true;
-        if ( !game.isAlive() )
-            game.start();
+        if ( !this.active ) {
+            this.active = true;
+            this.current = this;
+            this.game.start();
+        }
     }
 
     @Override
@@ -131,17 +153,69 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         this.game.platforms.add(p);
     }
 
+    @Override
+    public int[][] getPlayers() throws RemoteException {
+        if ( !current.equals(this) )
+            return current.getPlayers();
+        return game.play_array;
+    }
+
+    @Override
+    public int[][] getPlatforms() throws RemoteException {
+        if ( !current.equals(this) )
+            return current.getPlatforms();
+        return game.plat_array;
+    }
+
+    @Override
+    public int[] getDimensions() throws RemoteException {
+        if ( !current.equals(this) )
+            return current.getDimensions();
+        return game.getDimensions();
+    }
+
+    @Override
+    public boolean getGameOver() throws RemoteException {
+        if ( !current.equals(this) )
+            return current.getGameOver();
+        return game.gameover;
+    }
+
+    @Override
+    public DistributedGameInterface renewRemote() throws RemoteException {
+        return current;
+    }
+
+    @Override
+    public RemotePlayer renewPlayer(int ID) throws RemoteException {
+        if ( !current.equals(this) )
+            return current.renewPlayer(ID);
+
+        for ( Player player: game.players )
+            if ( player.ID == ID )
+                return player;
+
+        return null;
+    }
+
     public void migrate()
     {
+        System.err.println("Starting migration!");
+
         PriorityQueue<DistributedGameInterface> queue = new PriorityQueue<>(new ServerLoadComparator());
         queue.addAll(Arrays.asList(serverlist));
 
-        DistributedGameInterface target = queue.poll();
+        current = queue.poll();
+        try {
+            System.err.println("Migrating to " + current.getIP());
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
 
         game.migrate = true;
         try {
             game.join();
-            target.migrateGameThread(game.running,
+            current.migrateGameThread(game.running,
                     game.started,
                     game.dead_players,
                     game.no_players,
@@ -151,17 +225,15 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
                     game.level_modifier_2,
                     game.together);
 
-            this.game.platforms = new ArrayList<>();
-
             for(Player p: game.players )
-                target.migratePlayer(p.ID, p.body.x, p.body.y,
+                current.migratePlayer(p.ID, p.body.x, p.body.y,
                         p.velX, p.velY, p.active,
                         p.score, p.lives, p.jumping, p.restart);
 
             for (Platform p: game.platforms)
-                target.migratePlatform(p.x, p.y, p.width);
+                current.migratePlatform(p.x, p.y, p.width);
 
-            // TODO: 11-11-15 : Move references.
+            current.activate();
 
         } catch (InterruptedException | RemoteException e) {
             e.printStackTrace();

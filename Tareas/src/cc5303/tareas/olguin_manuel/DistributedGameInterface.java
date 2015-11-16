@@ -9,7 +9,6 @@ import java.rmi.RemoteException;
 public interface DistributedGameInterface extends Remote
 {
     RemotePlayer getPlayer(int playerID) throws RemoteException;
-    RemoteBoardState getBoardState() throws RemoteException;
     float getLoadAvg() throws RemoteException;
     void initConnections() throws RemoteException;
     void activate() throws RemoteException;
@@ -36,4 +35,13 @@ public interface DistributedGameInterface extends Remote
                         boolean restart ) throws RemoteException;
 
     void migratePlatform (int x, int y, int width) throws RemoteException;
+
+    int[][] getPlayers() throws RemoteException;
+    int[][] getPlatforms() throws RemoteException;
+    int[] getDimensions() throws  RemoteException;
+    boolean getGameOver() throws RemoteException;
+
+    DistributedGameInterface renewRemote() throws RemoteException;
+    RemotePlayer renewPlayer(int ID) throws RemoteException;
+    String getIP () throws RemoteException;
 }

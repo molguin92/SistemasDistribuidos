@@ -39,7 +39,6 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     {
         if (!this.jumping)
         {
-            System.err.println("Jumping");
             this.jumping = true;
             this.body.translate(0, -2);
             this.velY = 0;
@@ -50,13 +49,11 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     @Override
     public void moveLeft() throws RemoteException
     {
-        System.err.println("Left");
         this.velX = -1;
     }
     @Override
     public void moveRight() throws RemoteException
     {
-        System.err.println("Right");
         this.velX = 1;
     }
 
@@ -69,6 +66,11 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     @Override
     public void voteRestart() throws RemoteException {
         this.restart = true;
+    }
+
+    @Override
+    public void leaving() throws RemoteException {
+        this.lives = 0;
     }
 
     public void update()
@@ -100,6 +102,7 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
 
         this.jumping = false;
         this.active = false;
+        this.restart = false;
         this.score = 0;
         this.lives = 4;
 
