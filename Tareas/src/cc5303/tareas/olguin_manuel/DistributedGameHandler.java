@@ -63,9 +63,10 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         // returns the load average for the current server
         String line = "";
         try {
-            file_reader.reset();
+            file_reader.mark(1000);
             BufferedReader reader = new BufferedReader(file_reader);
             line = reader.readLine();
+            file_reader.reset();
         } catch (IOException e) {
             e.printStackTrace();
         }
