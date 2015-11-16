@@ -87,11 +87,11 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
                 try {
                     serverlist[i] = (DistributedGameInterface) Naming.lookup("rmi://" + servers[i] + ":1099/gameserver");
                     not_connected = false;
+                    System.err.println(servers[i] + " successfully connected!");
                 } catch (RemoteException | MalformedURLException | NotBoundException e) {
                     System.err.println(servers[i] + " is not yet ready...");
                     not_connected = true;
                 }
-                System.err.println(servers[i] + " successfully connected!");
 
                 try {
                     Thread.sleep(250);
