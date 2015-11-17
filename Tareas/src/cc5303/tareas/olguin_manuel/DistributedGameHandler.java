@@ -136,7 +136,10 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     @Override
     public void prepareMigration(int new_n_players) throws RemoteException {
 
+        System.err.println("Starting migration.");
+
         if (!current.equals(this)){
+            System.err.println("Calling prepareMigration.");
             current.prepareMigration( new_n_players );
             return;
         }
@@ -258,6 +261,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         game.migrate = true;
         try {
             game.join();
+            System.err.println("Game paused.");
             current.prepareMigration(game.target_no_players);
 
             current.migrateGameThread(game.running,
