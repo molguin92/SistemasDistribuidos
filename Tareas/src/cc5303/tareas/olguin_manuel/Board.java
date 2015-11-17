@@ -48,12 +48,6 @@ public class Board extends Canvas {
 
             if ( game.hasMigrated() )
             {
-                while (game.hasMigrated()) try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
                 game = game.renewRemote();
                 player = game.renewPlayer(playerID);
             }
