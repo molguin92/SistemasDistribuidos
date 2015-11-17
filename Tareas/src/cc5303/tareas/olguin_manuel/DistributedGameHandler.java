@@ -115,7 +115,8 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             }
 
         }
-        first.activate(); // TODO: se hacen partir mutuamente xd pls pls pls
+        if (first != null )
+            first.activate(); // TODO: se hacen partir mutuamente xd pls pls pls
         this.current = first;
         System.err.println("All systems connected and ready.");
     }
