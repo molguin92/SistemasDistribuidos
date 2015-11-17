@@ -120,6 +120,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             return;
         }
 
+        System.err.println("Clearing players...");
         game.players = new Player[new_n];
     }
 
@@ -130,6 +131,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             return;
         }
 
+        System.err.println("Clearing platforms...");
         game.platforms.clear();
     }
 
@@ -247,6 +249,9 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
                     game.level_modifier_1,
                     game.level_modifier_2,
                     game.together);
+
+            current.clearPlayers(game.target_no_players);
+            current.clearPlatforms();
 
             for(Player p: game.players )
                 current.migratePlayer(p.ID, p.body.x, p.body.y,
