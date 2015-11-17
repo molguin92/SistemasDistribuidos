@@ -224,6 +224,9 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
     @Override
     public RemotePlayer renewPlayer(int ID) throws RemoteException {
+
+        System.err.println("Renewing player reference.");
+
         if ( !current.equals(this) )
             return current.renewPlayer(ID);
 
