@@ -12,6 +12,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.PriorityQueue;
+import java.util.Queue;
 
 /**
  * Created by arachnid92 on 04-10-15.
@@ -25,16 +26,16 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     FileReader file_reader;
     DistributedGameInterface[] serverlist;
     DistributedGameInterface current;
-    private String[] servers;
+    private Queue<String> servers;
     public boolean active;
     public String own_ip;
 
-    public DistributedGameHandler(GameThread game, String[] servers, String own_ip) throws RemoteException
+    public DistributedGameHandler(GameThread game, Queue<String> servers, String own_ip) throws RemoteException
     {
         super();
         this.game = game;
         this.servers = servers;
-        this.serverlist = new DistributedGameInterface[this.servers.length];
+        this.serverlist = new DistributedGameInterface[this.servers.size()];
         this.active = false;
         this.own_ip = own_ip;
     }
@@ -79,17 +80,25 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         // initiates the connections to the other servers,
         // to set up the distributed system.
         System.err.println("Initializing connections...");
+        DistributedGameInterface first = null;
         boolean not_connected;
-        for ( int i = 0; i < servers.length; i++ ) {
+        for ( int i = 0; i < servers.size(); i++ ) {
+
+            String server = servers.poll();
+            if (server.equals(own_ip)) {
+                serverlist[i] = null;
+                continue;
+            }
+
             not_connected = true;
             while (not_connected)
             {
                 try {
-                    serverlist[i] = (DistributedGameInterface) Naming.lookup("rmi://" + servers[i] + ":1099/gameserver");
+                    serverlist[i] = (DistributedGameInterface) Naming.lookup("rmi://" + server + ":1099/gameserver");
                     not_connected = false;
-                    System.err.println(servers[i] + " successfully connected!");
+                    System.err.println(server + " successfully connected!");
                 } catch (RemoteException | MalformedURLException | NotBoundException e) {
-                    System.err.println(servers[i] + " is not yet ready...");
+                    System.err.println(server + " is not yet ready...");
                     not_connected = true;
                 }
 
@@ -99,14 +108,20 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
                     e.printStackTrace();
                 }
             }
+
+            if ( i == 0 )
+                first = serverlist[0];
+
         }
-        serverlist[0].activate();
+        first.activate(); // TODO: se hacen partir mutuamente xd pls pls pls
+        this.current = first;
         System.err.println("All systems connected and ready.");
     }
 
     @Override
     public void activate() throws RemoteException {
         if ( !this.active ) {
+            System.err.println("Game starting (or resuming) here.");
             this.active = true;
             this.current = this;
             this.game.start();
@@ -114,26 +129,28 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     }
 
     @Override
-    public void clearPlayers(int new_n) throws RemoteException {
-        if ( !current.equals(this) ) {
-            current.clearPlayers(new_n);
+    public void prepareMigration(int new_n_players) throws RemoteException {
+
+        if (!current.equals(this)){
+            current.prepareMigration( new_n_players );
             return;
         }
 
-        System.err.println("Clearing players...");
-        game.players = new Player[new_n];
-    }
+        try {
+            game.join();
 
-    @Override
-    public void clearPlatforms() throws RemoteException {
-        if ( !current.equals(this) ) {
-            current.clearPlatforms();
-            return;
+            System.err.println("Clearing players...");
+            game.players = new Player[new_n_players];
+
+            System.err.println("Clearing platforms...");
+            game.platforms.clear();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
-        System.err.println("Clearing platforms...");
-        game.platforms.clear();
     }
+
 
     @Override
     public void migrateGameThread(boolean running, boolean started, int dead_players, int no_players,
@@ -228,7 +245,9 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         System.err.println("Starting migration!");
 
         PriorityQueue<DistributedGameInterface> queue = new PriorityQueue<>(new ServerLoadComparator());
-        queue.addAll(Arrays.asList(serverlist));
+        for ( DistributedGameInterface server : serverlist )
+            if ( server != null )
+                queue.add(server);
 
         current = queue.poll();
         try {
@@ -240,6 +259,8 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         game.migrate = true;
         try {
             game.join();
+            current.prepareMigration(game.target_no_players);
+
             current.migrateGameThread(game.running,
                     game.started,
                     game.dead_players,
@@ -250,8 +271,6 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
                     game.level_modifier_2,
                     game.together);
 
-            current.clearPlayers(game.target_no_players);
-            current.clearPlatforms();
 
             for(Player p: game.players )
                 current.migratePlayer(p.ID, p.body.x, p.body.y,

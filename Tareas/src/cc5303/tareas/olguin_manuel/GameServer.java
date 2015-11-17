@@ -9,6 +9,10 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Created by arachnid92 on 01-10-15.
@@ -17,6 +21,7 @@ public class GameServer {
 
     // Main class of the server.
     // Must be executed with the ip of the server as first parameter.
+    // Second parameter is a path to the serverlist file
 
     // Optional parameter: -n 4 (wait for 4 and start!)
 
@@ -27,25 +32,34 @@ public class GameServer {
     public static void main ( String[] args )
     {
         String IP = args[0];
+        String path = args[1];
+        Queue<String> servers = new LinkedBlockingQueue<>();
         int n_players = 2;
         boolean together = false;
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(path));
+            String server;
+            while ( (server = br.readLine()) != null )
+                servers.add(server);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
         System.setProperty("java.rmi.server.hostname", IP);
 
-        if ( args[1].equalsIgnoreCase("-n") && args.length > 2 )
+        if ( args.length > 3 && args[2].equalsIgnoreCase("-n") )
         {
             n_players = Integer.parseInt(args[2]);
             together = true;
         }
 
-        ArrayList<String> list = new ArrayList<>();
-        for (String server : serverips )
-            if (!server.equals(IP))
-                list.add(server);
-
         GameThread game = new GameThread(n_players, together);
         DistributedGameInterface rinter = null;
         try {
-            rinter = new DistributedGameHandler(game, list.toArray(new String[1]) , IP); // TODO Fix
+            rinter = new DistributedGameHandler(game, servers , IP); // TODO Fix
         } catch (RemoteException e) {
             e.printStackTrace();
         }
