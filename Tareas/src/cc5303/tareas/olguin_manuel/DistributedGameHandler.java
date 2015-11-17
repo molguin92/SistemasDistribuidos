@@ -175,6 +175,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         System.err.println("Receiving Player " + ID + "...");
         int i = ID - 1;
         this.game.players[i] = new Player(posX, posY);
+        this.game.players[i].ID = ID;
         this.game.players[i].velX = velX;
         this.game.players[i].velY = velY;
         this.game.players[i].active = active;
