@@ -5,7 +5,6 @@ import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.PriorityQueue;
-import java.util.function.Supplier;
 
 public class Board extends Canvas {
 
@@ -47,9 +46,9 @@ public class Board extends Canvas {
 
         try {
 
-            if ( game.isMigrating() )
+            if ( game.hasMigrated() )
             {
-                while (game.isMigrating()) try {
+                while (game.hasMigrated()) try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
                     e.printStackTrace();

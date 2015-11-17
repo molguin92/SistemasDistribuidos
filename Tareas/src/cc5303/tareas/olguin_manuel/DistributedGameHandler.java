@@ -29,7 +29,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     public boolean active;
     public String own_ip;
 
-    private boolean migrating;
+    private boolean migrated;
 
     public DistributedGameHandler(GameThread game, Queue<String> servers, String own_ip) throws RemoteException
     {
@@ -39,7 +39,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         this.serverlist = new DistributedGameInterface[this.servers.size()];
         this.active = false;
         this.own_ip = own_ip;
-        this.migrating = false;
+        this.migrated = true;
     }
 
     @Override
@@ -48,9 +48,8 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         return own_ip;
     }
 
-    @Override
-    public boolean isMigrating() throws RemoteException {
-        return this.migrating;
+    public boolean hasMigrated() throws RemoteException {
+        return this.migrated;
     }
 
     @Override
@@ -137,14 +136,12 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             this.active = true;
             this.current = this;
             this.game.start();
-            this.migrating = false;
+            this.migrated = false;
         }
     }
 
     @Override
     public void prepareMigration(int new_n_players) throws RemoteException {
-
-        this.migrating = true;
 
         System.err.println("Starting migration.");
         System.err.println("Clearing players...");
@@ -250,7 +247,6 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     public void migrate()
     {
         System.err.println("Starting migration!");
-        this.migrating = true;
 
         PriorityQueue<DistributedGameInterface> queue = new PriorityQueue<>(new ServerLoadComparator());
         for ( DistributedGameInterface server : serverlist )
@@ -290,7 +286,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
                 current.migratePlatform(p.x, p.y, p.width);
 
             this.active = false;
-            this.migrating = false;
+            this.migrated = true;
             current.activate();
 
         } catch (InterruptedException | RemoteException e) {
