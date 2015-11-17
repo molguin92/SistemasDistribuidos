@@ -109,8 +109,10 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
                 }
             }
 
-            if ( i == 0 )
+            if ( i == 0 ) {
+                System.err.println("Starting IP: " + server);
                 first = serverlist[0];
+            }
 
         }
         first.activate(); // TODO: se hacen partir mutuamente xd pls pls pls
