@@ -46,8 +46,19 @@ public class Board extends Canvas {
     public void paint(Graphics g){
 
         try {
-            game = game.renewRemote();
-            player = game.renewPlayer(playerID);
+
+            if ( game.isMigrating() )
+            {
+                while (game.isMigrating()) try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                game = game.renewRemote();
+                player = game.renewPlayer(playerID);
+            }
+
             if ( player == null )
             {
                 System.err.printf("Player is null... wtf?");

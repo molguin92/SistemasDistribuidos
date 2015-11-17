@@ -46,4 +46,6 @@ public interface DistributedGameInterface extends Remote
     DistributedGameInterface renewRemote() throws RemoteException;
     RemotePlayer renewPlayer(int ID) throws RemoteException;
     String getIP () throws RemoteException;
+
+    boolean isMigrating() throws RemoteException;
 }
