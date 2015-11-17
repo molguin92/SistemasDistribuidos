@@ -52,7 +52,7 @@ public class GameServer {
 
         if ( args.length > 3 && args[2].equalsIgnoreCase("-n") )
         {
-            n_players = Integer.parseInt(args[2]);
+            n_players = Integer.parseInt(args[3]);
             together = true;
         }
 
