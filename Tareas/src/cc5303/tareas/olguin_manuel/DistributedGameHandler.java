@@ -114,6 +114,26 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     }
 
     @Override
+    public void clearPlayers(int new_n) throws RemoteException {
+        if ( !current.equals(this) ) {
+            current.clearPlayers(new_n);
+            return;
+        }
+
+        game.players = new Player[new_n];
+    }
+
+    @Override
+    public void clearPlatforms() throws RemoteException {
+        if ( !current.equals(this) ) {
+            current.clearPlatforms();
+            return;
+        }
+
+        game.platforms.clear();
+    }
+
+    @Override
     public void migrateGameThread(boolean running, boolean started, int dead_players, int no_players,
                                   int target_no_players, int score, float level_modifier_1,
                                   float level_modifier_2, boolean together) throws RemoteException {
@@ -264,6 +284,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             }
         }
     }
+
 
 
 }

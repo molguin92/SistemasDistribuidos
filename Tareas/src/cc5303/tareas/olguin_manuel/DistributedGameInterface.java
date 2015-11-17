@@ -13,6 +13,9 @@ public interface DistributedGameInterface extends Remote
     void initConnections() throws RemoteException;
     void activate() throws RemoteException;
 
+    void clearPlayers(int new_n) throws RemoteException;
+    void clearPlatforms() throws RemoteException;
+
     void migrateGameThread(boolean running,
                            boolean started,
                            int dead_players,
