@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.PriorityQueue;
+import java.util.function.Supplier;
 
 public class Board extends Canvas {
 
@@ -47,6 +48,11 @@ public class Board extends Canvas {
         try {
             game = game.renewRemote();
             player = game.renewPlayer(playerID);
+            if ( player == null )
+            {
+                System.err.printf("Player is null... wtf?");
+                System.exit(-1);
+            }
         } catch (RemoteException e) {
             e.printStackTrace();
         }
