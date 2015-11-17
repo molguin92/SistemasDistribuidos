@@ -116,9 +116,10 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             }
 
         }
-        if (first != null )
+        if (first != null ) {
             first.activate(); // TODO: se hacen partir mutuamente xd pls pls pls
-        this.current = first;
+            this.current = first;
+        }
         System.err.println("All systems connected and ready.");
     }
 
@@ -140,18 +141,12 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             return;
         }
 
-        try {
-            game.join();
 
-            System.err.println("Clearing players...");
-            game.players = new Player[new_n_players];
+        System.err.println("Clearing players...");
+        game.players = new Player[new_n_players];
 
-            System.err.println("Clearing platforms...");
-            game.platforms.clear();
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        System.err.println("Clearing platforms...");
+        game.platforms.clear();
 
     }
 
