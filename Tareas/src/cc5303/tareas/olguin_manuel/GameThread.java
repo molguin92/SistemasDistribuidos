@@ -51,11 +51,9 @@ public class GameThread extends Thread {
                 if (together && no_players == target_no_players)
                     return null;
 
-                Random rng = new Random(System.currentTimeMillis());
                 no_players++;
-                player.ID = no_players;
                 player.active = true;
-                player.body.setLocation(rng.nextInt(WIDTH - 20) + 10, HEIGHT - 50);
+                player.body.setLocation(rand.nextInt(WIDTH - 20) + 10, HEIGHT - 50);
 
                 if ( no_players == target_no_players )
                     started = true;
@@ -133,6 +131,8 @@ public class GameThread extends Thread {
 
     public GameThread(int n_players, boolean together) {
 
+        rand = new Random(System.nanoTime());
+
         this.target_no_players = n_players;
         this.together = together;
         this.dead_players = 0;
@@ -142,6 +142,7 @@ public class GameThread extends Thread {
             // create inactive players
             try {
                 this.players[i] = new Player(WIDTH / 2, HEIGHT / 2);
+                this.players[i].ID = i + 1;
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -160,7 +161,6 @@ public class GameThread extends Thread {
         this.level_modifier_1 = 0.2f;
         this.level_modifier_2 = 0.5f;
 
-        rand = new Random(System.nanoTime());
         for (int y = -HEIGHT; y < HEIGHT; y += 100) {
             // generate random platforms
             this.generatePlatforms(y);
