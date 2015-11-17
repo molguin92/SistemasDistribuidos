@@ -82,7 +82,8 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         System.err.println("Initializing connections...");
         DistributedGameInterface first = null;
         boolean not_connected;
-        for ( int i = 0; i < servers.size(); i++ ) {
+        int n_servers = servers.size();
+        for ( int i = 0; i < n_servers; i++ ) {
 
             String server = servers.poll();
             if (server.equals(own_ip)) {
