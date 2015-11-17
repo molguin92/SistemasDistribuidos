@@ -117,6 +117,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     public void migrateGameThread(boolean running, boolean started, int dead_players, int no_players,
                                   int target_no_players, int score, float level_modifier_1,
                                   float level_modifier_2, boolean together) throws RemoteException {
+        System.err.println("Receiving game state...");
         this.game.running = running;
         this.game.started = started;
         this.game.dead_players = dead_players;
@@ -131,6 +132,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     @Override
     public void migratePlayer(int ID, int posX, int posY, float velX, float velY, boolean active, int score, int lives,
                               boolean jumping, boolean restart) throws RemoteException {
+        System.err.println("Receiving Player " + ID + "...");
         int i = ID - 1;
         this.game.players[i].body.setLocation(posX, posY);
         this.game.players[i].velX = velX;
@@ -144,6 +146,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
     @Override
     public void migratePlatform(int x, int y, int width) throws RemoteException {
+        System.err.println("Receiving platform...");
         Platform p = new Platform(
                 x + width/2,
                 y + Platform.THICKNESS/2,
@@ -233,6 +236,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             for (Platform p: game.platforms)
                 current.migratePlatform(p.x, p.y, p.width);
 
+            this.active = false;
             current.activate();
 
         } catch (InterruptedException | RemoteException e) {
