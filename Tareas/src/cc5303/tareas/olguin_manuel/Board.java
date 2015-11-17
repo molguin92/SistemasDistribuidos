@@ -14,30 +14,26 @@ public class Board extends Canvas {
     public Image img;
     public Graphics buffer;
     public int playerID;
+    public RemotePlayer player;
     private ScoreComparator scoreComparator;
     private PriorityQueue<int[]> pqueue;
     public boolean request_restart;
 
     DistributedGameInterface game;
 
-    public Board(DistributedGameInterface game, int ID)
+    public Board(DistributedGameInterface game, RemotePlayer player)
     {
-        this.playerID = ID;
+        this.player = player;
+        try {
+            this.playerID = player.getID();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         this.setFont(new Font("SCORE", Font.BOLD, 16));
         this.scoreComparator = new ScoreComparator();
         this.pqueue = new PriorityQueue<>(4, scoreComparator);
         this.request_restart = false;
         this.game = game;
-    }
-
-    public RemotePlayer renewPlayer()
-    {
-        try {
-            return game.renewPlayer(playerID);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     @Override
@@ -50,6 +46,7 @@ public class Board extends Canvas {
 
         try {
             game = game.renewRemote();
+            player = game.renewPlayer(playerID);
         } catch (RemoteException e) {
             e.printStackTrace();
         }

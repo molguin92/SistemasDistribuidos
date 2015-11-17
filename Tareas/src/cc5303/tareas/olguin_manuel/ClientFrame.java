@@ -14,14 +14,11 @@ public class ClientFrame extends JFrame
     // Frame of the client, takes care of registering keystrokes.
 
     Board board;
-    RemotePlayer player;
     Timer board_update;
-    Timer player_update;
 
-    public ClientFrame (RemotePlayer player, Board board, int[] dimensions )
+    public ClientFrame(Board board, int[] dimensions)
     {
         this.board = board;
-        this.player = player;
         setFocusable(true);
         setFocusTraversalKeysEnabled(false);
         setTitle("Ice Climbers");
@@ -60,9 +57,6 @@ public class ClientFrame extends JFrame
             }
         });
 
-        //renew player reference every 10 ms
-        this.player_update = new Timer(10, new updatePlayer());
-
         this.addWindowListener(new WindowListener() {
             @Override
             public void windowOpened(WindowEvent e) {}
@@ -70,7 +64,7 @@ public class ClientFrame extends JFrame
             @Override
             public void windowClosing(WindowEvent e) {
                 try {
-                    player.leaving();
+                    board.player.leaving();
                 } catch (RemoteException e1) {
                     e1.printStackTrace();
                 }
@@ -100,7 +94,7 @@ public class ClientFrame extends JFrame
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                player.moveLeft();
+                board.player.moveLeft();
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }
@@ -112,7 +106,7 @@ public class ClientFrame extends JFrame
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                player.moveRight();
+                board.player.moveRight();
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }
@@ -124,7 +118,7 @@ public class ClientFrame extends JFrame
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                player.jump();
+                board.player.jump();
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }
@@ -136,7 +130,7 @@ public class ClientFrame extends JFrame
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                player.stop();
+                board.player.stop();
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }
@@ -148,21 +142,11 @@ public class ClientFrame extends JFrame
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                player.voteRestart();
+                board.player.voteRestart();
                 board.request_restart = true;
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }
         }
     }
-
-    class updatePlayer implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            player = board.renewPlayer();
-        }
-    }
-
-
 }
