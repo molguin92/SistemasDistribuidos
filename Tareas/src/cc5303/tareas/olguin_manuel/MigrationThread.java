@@ -30,7 +30,7 @@ public class MigrationThread extends Thread {
                 e.printStackTrace();
             }
 
-            if (gameHandler.active)
+            if (load > 1 && gameHandler.active)
                 gameHandler.migrate();
 
             try {
