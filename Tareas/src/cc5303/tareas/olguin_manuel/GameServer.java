@@ -1,17 +1,12 @@
 package cc5303.tareas.olguin_manuel;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -56,10 +51,9 @@ public class GameServer {
             together = true;
         }
 
-        GameThread game = new GameThread(n_players, together);
         DistributedGameInterface rinter = null;
         try {
-            rinter = new DistributedGameHandler(game, servers , IP); // TODO Fix
+            rinter = new DistributedGameHandler(servers , IP, n_players, together ); // TODO Fix
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -77,12 +71,6 @@ public class GameServer {
 
         MigrationThread mthread = new MigrationThread((DistributedGameHandler) rinter);
         mthread.start();
-
-        try {
-            game.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
     }
 

@@ -11,9 +11,9 @@ public interface DistributedGameInterface extends Remote
     RemotePlayer getPlayer(int playerID) throws RemoteException;
     float getLoadAvg() throws RemoteException;
     void initConnections() throws RemoteException;
-    void activate() throws RemoteException;
+    void activate(boolean first_run) throws RemoteException;
 
-    void prepareMigration( int new_n_players ) throws RemoteException;
+    void prepareMigration(int new_n_players, boolean together) throws RemoteException;
 
     void migrateGameThread(boolean running,
                            boolean started,

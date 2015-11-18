@@ -29,17 +29,22 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     public boolean active;
     public String own_ip;
 
+    private boolean together;
+    private int n_players;
+
     private boolean migrated;
 
-    public DistributedGameHandler(GameThread game, Queue<String> servers, String own_ip) throws RemoteException
+    public DistributedGameHandler(Queue<String> servers, String own_ip, int n_players, boolean together) throws RemoteException
     {
         super();
-        this.game = game;
         this.servers = servers;
         this.serverlist = new DistributedGameInterface[this.servers.size()];
         this.active = false;
         this.own_ip = own_ip;
         this.migrated = true;
+
+        this.together = together;
+        this.n_players = n_players;
     }
 
     @Override
@@ -135,27 +140,34 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
         }
         if (first != null ) {
-            first.activate(); // TODO: se hacen partir mutuamente xd pls pls pls
+            first.activate(true); // TODO: se hacen partir mutuamente xd pls pls pls
             this.current = first;
         }
         System.err.println("All systems connected and ready.");
     }
 
     @Override
-    public void activate() throws RemoteException {
+    public void activate(boolean first_run) throws RemoteException {
         if ( !this.active ) {
             System.err.println("Game starting (or resuming) here.");
             this.active = true;
             this.current = this;
+
+            if (first_run)
+                this.game = new GameThread(this.n_players, this.together);
+
             this.game.start();
             this.migrated = false;
         }
     }
 
     @Override
-    public void prepareMigration(int new_n_players) throws RemoteException {
+    public void prepareMigration(int new_n_players, boolean together) throws RemoteException {
 
         System.err.println("Starting migration.");
+
+        this.game = new GameThread(new_n_players, together);
+
         System.err.println("Clearing players...");
         game.players = new Player[new_n_players];
 
@@ -277,7 +289,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         try {
             game.join();
             System.err.println("Game paused.");
-            current.prepareMigration(game.target_no_players);
+            current.prepareMigration(game.target_no_players, game.together );
 
             current.migrateGameThread(game.running,
                     game.started,
@@ -300,7 +312,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
             this.active = false;
             this.migrated = true;
-            current.activate();
+            current.activate(false);
 
         } catch (InterruptedException | RemoteException e) {
             e.printStackTrace();
