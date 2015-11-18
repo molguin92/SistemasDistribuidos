@@ -196,7 +196,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
     @Override
     public void migratePlayer(int ID, int posX, int posY, float velX, float velY, boolean active, int score, int lives,
-                              boolean jumping, boolean restart) throws RemoteException {
+                              boolean jumping, boolean restart, int score_offset) throws RemoteException {
         System.err.println("Receiving Player " + ID + "...");
         int i = ID - 1;
         this.game.players[i] = new Player(posX, posY);
@@ -205,6 +205,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         this.game.players[i].velY = velY;
         this.game.players[i].active = active;
         this.game.players[i].score = score;
+        this.game.players[i].score_offset = score_offset;
         this.game.players[i].lives = lives;
         this.game.players[i].jumping = jumping;
         this.game.players[i].restart = restart;
@@ -306,7 +307,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             for(Player p: game.players )
                 current.migratePlayer(p.ID, p.body.x, p.body.y,
                         p.velX, p.velY, p.active,
-                        p.score, p.lives, p.jumping, p.restart);
+                        p.score, p.lives, p.jumping, p.restart, p.score_offset);
 
             for (Platform p: game.platforms)
                 current.migratePlatform(p.x, p.y, p.width);

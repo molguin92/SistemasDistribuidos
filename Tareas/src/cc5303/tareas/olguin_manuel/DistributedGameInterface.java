@@ -25,16 +25,16 @@ public interface DistributedGameInterface extends Remote
                            float level_modifier_2,
                            boolean together) throws RemoteException;
 
-    void migratePlayer( int ID,
-                        int posX,
-                        int posY,
-                        float velX,
-                        float velY,
-                        boolean active,
-                        int score,
-                        int lives,
-                        boolean jumping,
-                        boolean restart ) throws RemoteException;
+    void migratePlayer(int ID,
+                       int posX,
+                       int posY,
+                       float velX,
+                       float velY,
+                       boolean active,
+                       int score,
+                       int lives,
+                       boolean jumping,
+                       boolean restart, int score_offset) throws RemoteException;
 
     void migratePlatform (int x, int y, int width) throws RemoteException;
 
