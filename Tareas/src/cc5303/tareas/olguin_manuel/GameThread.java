@@ -53,7 +53,10 @@ public class GameThread extends Thread {
 
                 no_players++;
                 player.active = true;
-                player.body.setLocation(rand.nextInt(WIDTH - 20) + 10, HEIGHT - 50);
+                if (!started)
+                    player.body.setLocation(rand.nextInt(WIDTH - 20) + 10, HEIGHT - 50);
+                else
+                    player.body.setLocation(rand.nextInt(WIDTH - 20) + 10, HEIGHT/2);
 
                 if ( no_players == target_no_players )
                     started = true;

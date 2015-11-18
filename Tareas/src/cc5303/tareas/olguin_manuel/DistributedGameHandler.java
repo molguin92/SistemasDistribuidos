@@ -54,6 +54,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
     @Override
     public void leaving(int playerID) throws RemoteException {
+        System.err.println("Player " + playerID + " is leaving. Opening player slot.");
         Player p = game.players[playerID - 1];
         game.no_players--;
         game.together = false;
