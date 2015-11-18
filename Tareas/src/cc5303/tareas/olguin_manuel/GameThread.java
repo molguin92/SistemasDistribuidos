@@ -343,7 +343,6 @@ public class GameThread extends Thread {
     public void resetGameState()
     {
         System.out.println("Restarting game.");
-        Random rng = new Random(System.currentTimeMillis());
 
         play_array = new int[1][7];
         for ( int[] a: play_array )
@@ -374,7 +373,7 @@ public class GameThread extends Thread {
             System.out.println("Reactivating player " + p.ID);
             p.active = true;
             p.score = 0;
-            p.body.setLocation(rng.nextInt(WIDTH - 20) + 10, HEIGHT - 50);
+            p.body.setLocation(rand.nextInt(WIDTH - 20) + 10, HEIGHT - 50);
             p.velY = 0;
             p.lives = 4;
         }

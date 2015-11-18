@@ -53,6 +53,16 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     }
 
     @Override
+    public void leaving(int playerID) throws RemoteException {
+        Player p = game.players[playerID - 1];
+        game.no_players--;
+        game.together = false;
+        p.active = false;
+        p.score = 0;
+        p.lives = 4;
+    }
+
+    @Override
     public RemotePlayer getPlayer(int playerID) throws RemoteException {
         if ( !current.equals(this) )
             return current.getPlayer(playerID);

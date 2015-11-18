@@ -48,4 +48,6 @@ public interface DistributedGameInterface extends Remote
     String getIP () throws RemoteException;
 
     boolean hasMigrated() throws RemoteException;
+
+    void leaving(int playerID) throws RemoteException;
 }

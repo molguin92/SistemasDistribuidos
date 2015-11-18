@@ -68,11 +68,6 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
         this.restart = true;
     }
 
-    @Override
-    public void leaving() throws RemoteException {
-        this.lives = 0;
-    }
-
     public void update()
     {
         this.body.translate((int)this.velX, (int)this.velY);

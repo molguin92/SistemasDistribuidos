@@ -64,7 +64,7 @@ public class ClientFrame extends JFrame
             @Override
             public void windowClosing(WindowEvent e) {
                 try {
-                    board.player.leaving();
+                    board.game.leaving(board.playerID);
                 } catch (RemoteException e1) {
                     e1.printStackTrace();
                 }
