@@ -51,6 +51,7 @@ public class GameThread extends Thread {
                 if (together && no_players == target_no_players)
                     return null;
 
+                System.err.println("Activating Player " + player.ID);
                 no_players++;
                 player.active = true;
                 if (!started)

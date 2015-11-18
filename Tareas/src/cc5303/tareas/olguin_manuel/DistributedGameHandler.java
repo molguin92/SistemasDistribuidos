@@ -61,6 +61,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         p.active = false;
         p.score = 0;
         p.lives = 4;
+        this.migrate();
     }
 
     @Override
