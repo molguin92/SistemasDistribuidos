@@ -26,6 +26,7 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     public boolean active;
 
     public int score;
+    public int score_offset;
     public int lives;
 
     public void accelerate( float X, float Y )
@@ -99,6 +100,7 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
         this.active = false;
         this.restart = false;
         this.score = 0;
+        this.score_offset = 0;
         this.lives = 4;
 
         this.body = new Rectangle( posX, posY, Player.HW, Player.HW  );
