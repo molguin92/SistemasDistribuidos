@@ -282,6 +282,9 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         DistributedGameInterface target = serverlist[0];
         for ( DistributedGameInterface server : serverlist )
         {
+            if ( server == null )
+                continue;
+            
             try {
                 System.err.println("Polling load from " + server.getIP());
                 if ((load = server.getLoadAvg()) < min_load ) {
