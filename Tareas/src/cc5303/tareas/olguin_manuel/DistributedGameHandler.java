@@ -75,6 +75,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         p.score = 0;
         p.score_offset = -1 * game.score;
         p.lives = 4;
+        p.restart = true;
         this.migrate();
     }
 
