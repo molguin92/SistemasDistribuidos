@@ -9,7 +9,7 @@ import java.rmi.RemoteException;
 public interface DistributedGameInterface extends Remote
 {
     RemotePlayer getPlayer(int playerID) throws RemoteException;
-    float getLoadAvg() throws RemoteException;
+    double getLoadAvg() throws RemoteException;
     void initConnections() throws RemoteException;
     void activate(boolean first_run) throws RemoteException;
 

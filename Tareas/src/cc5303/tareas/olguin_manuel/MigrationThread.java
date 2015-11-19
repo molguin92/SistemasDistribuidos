@@ -23,14 +23,14 @@ public class MigrationThread extends Thread {
     public void run() {
         while (true)
         {
-            float load = 0;
+            double load = 0d;
             try {
                 load = gameHandler.getLoadAvg();
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
 
-            if (load > 1 && gameHandler.active)
+            if (load > 0.75d && gameHandler.active)
                 gameHandler.migrate();
 
             try {

@@ -1,9 +1,8 @@
 package cc5303.tareas.olguin_manuel;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -35,6 +34,8 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
     private boolean migrated;
 
+    private OperatingSystemMXBean os;
+
     public DistributedGameHandler(Queue<String> servers, String own_ip, int n_players, boolean together) throws RemoteException
     {
         super();
@@ -46,6 +47,8 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
         this.together = together;
         this.n_players = n_players;
+
+        this.os = ManagementFactory.getOperatingSystemMXBean();
     }
 
     @Override
@@ -87,27 +90,14 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     }
 
     @Override
-    public float getLoadAvg() throws RemoteException {
+    public double getLoadAvg() throws RemoteException {
         // returns the load average for the current server
         System.err.println("Polling load...");
-        String line = "";
-        try {
-            try {
-                this.file_reader = new FileReader("/proc/loadavg");
-            } catch (FileNotFoundException e)
-            {
-                e.printStackTrace();
-            }
-            BufferedReader reader = new BufferedReader(file_reader);
-            line = reader.readLine();
-            file_reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        String[] values = line.split(" ");
-        System.err.println("Current load: " + values[0]);
-        return Float.parseFloat(values[0]);
+        double load = os.getSystemLoadAverage();
+        int proc = os.getAvailableProcessors();
+        double pcnt = load/proc;
+        System.err.println("Current load: " + pcnt*100 + "%");
+        return pcnt;
     }
 
     @Override
@@ -304,8 +294,8 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
         System.err.println("Starting migration!");
 
-        float min_load = 100f;
-        float load;
+        double min_load = 100;
+        double load;
         DistributedGameInterface target = serverlist[0];
         for ( DistributedGameInterface server : serverlist )
         {
