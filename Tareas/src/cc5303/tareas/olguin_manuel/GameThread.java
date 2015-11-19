@@ -98,11 +98,10 @@ public class GameThread extends Thread {
 
             for (int i = 0; i < players.length; i++) {
 
-                players[i].restart = false;
-
                 if (players[i].active) {
                     players[i].update();
                     players[i].score = this.score + players[i].score_offset;
+                    players[i].restart = false;
                 }
                 if (players[i].body.getMaxY() < 200)
                     shift = true;
