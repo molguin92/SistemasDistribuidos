@@ -5,6 +5,9 @@ import java.rmi.RemoteException;
 /**
  * Created by arachnid92 on 16-11-15.
  */
+
+// monitors the system load and decides when to migrate
+
 public class MigrationThread extends Thread {
 
     DistributedGameHandler gameHandler;
