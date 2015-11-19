@@ -331,6 +331,7 @@ public class GameThread extends Thread {
             for (Player p: players)
             {
                 this.gameover = p.restart && this.gameover;
+                System.out.println("Player " + p.ID + " votes: " + p.restart);
             }
             this.gameover = !this.gameover;
 
