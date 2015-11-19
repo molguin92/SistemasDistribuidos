@@ -80,6 +80,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     @Override
     public float getLoadAvg() throws RemoteException {
         // returns the load average for the current server
+        System.err.println("Polling load...");
         String line = "";
         try {
             try {
@@ -96,6 +97,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         }
 
         String[] values = line.split(" ");
+        System.err.println("Current load: " + values[0]);
         return Float.parseFloat(values[0]);
     }
 
@@ -277,13 +279,14 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
         float min_load = 100f;
         float load;
-        current = serverlist[0];
+        DistributedGameInterface target = serverlist[0];
         for ( DistributedGameInterface server : serverlist )
         {
             try {
+                System.err.println("Polling load from " + server.getIP());
                 if ((load = server.getLoadAvg()) < min_load ) {
                     min_load = load;
-                    current = server;
+                    target = server;
                 }
             } catch (RemoteException e) {
                 e.printStackTrace();
@@ -300,9 +303,9 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         try {
             game.join();
             System.err.println("Game paused.");
-            current.prepareMigration(game.target_no_players, game.together );
+            target.prepareMigration(game.target_no_players, game.together );
 
-            current.migrateGameThread(game.running,
+            target.migrateGameThread(game.running,
                     game.started,
                     game.dead_players,
                     game.no_players,
@@ -314,15 +317,16 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
 
             for(Player p: game.players )
-                current.migratePlayer(p.ID, p.body.x, p.body.y,
+                target.migratePlayer(p.ID, p.body.x, p.body.y,
                         p.velX, p.velY, p.active,
                         p.score, p.lives, p.jumping, p.restart, p.score_offset);
 
             for (Platform p: game.platforms)
-                current.migratePlatform(p.x, p.y, p.width);
+                target.migratePlatform(p.x, p.y, p.width);
 
             this.active = false;
             this.migrated = true;
+            this.current = target;
             current.activate(false);
 
         } catch (InterruptedException | RemoteException e) {
