@@ -9,8 +9,6 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Comparator;
-import java.util.PriorityQueue;
 import java.util.Queue;
 
 /**
@@ -19,12 +17,15 @@ import java.util.Queue;
 public class DistributedGameHandler extends UnicastRemoteObject implements DistributedGameInterface
 {
 
+    // This is where the magic happens
+    // This class handles the remote connections and migrates the server when needed
+
     private static final long serialVersionUID = 1L;
 
     GameThread game;
     FileReader file_reader;
     DistributedGameInterface[] serverlist;
-    DistributedGameInterface current;
+    DistributedGameInterface current; // <- important! always point to the server currently running the game
     private Queue<String> servers;
     public boolean active;
     public String own_ip;
@@ -59,6 +60,10 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
     @Override
     public void leaving(int playerID) throws RemoteException {
+
+        // indicates that player playerID is leaving the game
+        // open a new slot and migrate
+
         System.err.println("Player " + playerID + " is leaving. Opening player slot.");
         Player p = game.players[playerID - 1];
         game.no_players--;
@@ -72,6 +77,10 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
     @Override
     public RemotePlayer getPlayer(int playerID) throws RemoteException {
+
+        // a client wants a player
+        // activate one and hand it to the caller
+
         if ( !current.equals(this) )
             return current.getPlayer(playerID);
         return game.activatePlayer();
@@ -120,6 +129,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             not_connected = true;
             while (not_connected)
             {
+                // keep trying while some servers are not connected
                 try {
                     serverlist[i] = (DistributedGameInterface) Naming.lookup("rmi://" + server + ":1099/gameserver");
                     not_connected = false;
@@ -143,7 +153,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
         }
         if (first != null ) {
-            first.activate(true); // TODO: se hacen partir mutuamente xd pls pls pls
+            first.activate(true); // start the game
             this.current = first;
         }
         System.err.println("All systems connected and ready.");
@@ -151,6 +161,9 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
     @Override
     public void activate(boolean first_run) throws RemoteException {
+
+        // starts the game logic
+
         if ( !this.active ) {
             System.err.println("Game starting (or resuming) here.");
             this.active = true;
@@ -166,6 +179,8 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
     @Override
     public void prepareMigration(int new_n_players, boolean together) throws RemoteException {
+
+        // pre-migration preparation
 
         System.err.println("Starting migration.");
 
@@ -184,6 +199,9 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     public void migrateGameThread(boolean running, boolean started, int dead_players, int no_players,
                                   int target_no_players, int score, float level_modifier_1,
                                   float level_modifier_2, boolean together) throws RemoteException {
+
+        // migrates the game thread
+
         System.err.println("Receiving game state...");
         this.game.running = running;
         this.game.started = started;
@@ -199,6 +217,9 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     @Override
     public void migratePlayer(int ID, int posX, int posY, float velX, float velY, boolean active, int score, int lives,
                               boolean jumping, boolean restart, int score_offset) throws RemoteException {
+
+        // migrates a player
+
         System.err.println("Receiving Player " + ID + "...");
         int i = ID - 1;
         this.game.players[i] = new Player(posX, posY);
@@ -215,6 +236,9 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
     @Override
     public void migratePlatform(int x, int y, int width) throws RemoteException {
+
+        // migrates a platform
+
         System.err.println("Receiving platform...");
         Platform p = new Platform(
                 x + width/2,
@@ -275,6 +299,9 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
     public void migrate()
     {
+
+        // migrates the server
+
         System.err.println("Starting migration!");
 
         float min_load = 100f;
@@ -282,9 +309,12 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         DistributedGameInterface target = serverlist[0];
         for ( DistributedGameInterface server : serverlist )
         {
+
+            // need to get the loads of the other servers, to compare!
+
             if ( server == null )
                 continue;
-            
+
             try {
                 System.err.println("Polling load from " + server.getIP());
                 if ((load = server.getLoadAvg()) < min_load ) {

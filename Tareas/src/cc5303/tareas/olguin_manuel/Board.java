@@ -8,7 +8,7 @@ import java.util.PriorityQueue;
 
 public class Board extends Canvas {
 
-    //Classs in charge of getting information from the remote interface,
+    //Class in charge of getting information from the remote interface,
     //and drawing it on screen.
 
     public Image img;
@@ -21,8 +21,7 @@ public class Board extends Canvas {
 
     DistributedGameInterface game;
 
-    public Board(DistributedGameInterface game, RemotePlayer player)
-    {
+    public Board(DistributedGameInterface game, RemotePlayer player) {
         this.player = player;
         try {
             this.playerID = player.getID();
@@ -42,18 +41,18 @@ public class Board extends Canvas {
     }
 
     @Override
-    public void paint(Graphics g){
+    public void paint(Graphics g) {
 
         try {
 
-            if ( game.hasMigrated() )
-            {
+            // check for migration...
+            // if the server has migrated, we need to renew our references to the remote objects!
+            if (game.hasMigrated()) {
                 game = game.renewRemote();
                 player = game.renewPlayer(playerID);
             }
 
-            if ( player == null )
-            {
+            if (player == null) {
                 System.err.printf("Player is null... wtf?");
                 System.exit(-1);
             }
@@ -61,8 +60,8 @@ public class Board extends Canvas {
             e.printStackTrace();
         }
 
-        if(buffer==null){
-            img = createImage(getWidth(),getHeight() );
+        if (buffer == null) {
+            img = createImage(getWidth(), getHeight());
             buffer = img.getGraphics();
         }
 
@@ -82,22 +81,18 @@ public class Board extends Canvas {
             System.exit(-1);
         }
 
-        for ( int[] player : players )
-        {
-            if ( player[6] == -1 )
-            {
-                //ESPERANDO A MAS JUGADORES;
+        for (int[] player : players) {
+            if (player[6] == -1) {
+                // Waiting for players.
                 buffer.setColor(Color.CYAN);
                 buffer.drawString("ESPERANDO... ", 25, 200);
                 g.drawImage(img, 0, 0, null);
                 return;
             }
 
-            if ( player[4] == this.playerID )
-            {
-                if( player[3] == 0 )
-                {
-                    // game over... ahora hay que mostrar una scoreboard
+            if (player[4] == this.playerID) {
+                if (player[3] == 0) {
+                    // game over... show scoreboard
                     System.out.println("SCORE: " + player[5]);
                     System.out.println("GAME OVER");
 
@@ -105,16 +100,14 @@ public class Board extends Canvas {
                     return;
                 }
                 this.request_restart = false;
-                // el propio jugador tiene un color distinto
+                // our player is painted in red
                 buffer.setColor(Color.RED);
                 buffer.fillRect(player[0], player[1], player[2], player[2]);
                 System.out.println("SCORE: " + player[5]);
                 score = player[5];
                 lives = player[6];
-            } else
-            {
-                if ( player[3] != 0 )
-                {
+            } else {
+                if (player[3] != 0) {
                     buffer.setColor(Color.BLUE);
                     buffer.fillRect(player[0], player[1], player[2], player[2]);
                 }
@@ -126,7 +119,7 @@ public class Board extends Canvas {
             buffer.fillRect(platform[0], platform[1], platform[2], platform[3]);
         }
 
-        //score y vidas se dibujan al final para quedar SOBRE lo demas
+        //finally, draw scores and lives over everything else
         buffer.setColor(Color.CYAN);
         buffer.drawString("SCORE: " + score, 25, 25);
         buffer.drawString("LIVES: " + lives, 25, 50);
@@ -134,28 +127,28 @@ public class Board extends Canvas {
         g.drawImage(img, 0, 0, null);
     }
 
-    private void paint_gameover(int[][] players, Graphics g)
-    {
+    private void paint_gameover(int[][] players, Graphics g) {
+
+        // paints the game over screen
+
         pqueue.addAll(Arrays.asList(players));
         buffer.setColor(Color.black);
         buffer.fillRect(0, 0, getWidth(), getHeight());
         buffer.setColor(Color.CYAN);
         int y = 100;
         buffer.drawString("SCOREBOARD: ", 25, y);
-        while (!pqueue.isEmpty())
-        {
+        while (!pqueue.isEmpty()) {
             y += 20;
             int[] p_state = pqueue.poll();
 
-            if ( p_state[4] == this.playerID )
+            if (p_state[4] == this.playerID)
                 buffer.drawString("You: " + p_state[5] + "", 25, y);
             else
                 buffer.drawString("Player " + p_state[4] + ": " + p_state[5] + "", 25, y);
         }
 
-        try{
-            if (game.getGameOver())
-            {
+        try {
+            if (game.getGameOver()) {
                 y += 40;
                 buffer.drawString("GAME OVER", 25, y);
                 y += 40;
@@ -163,8 +156,7 @@ public class Board extends Canvas {
                 y += 20;
                 buffer.drawString("PLAY AGAIN!", 25, y);
                 y += 40;
-                if(this.request_restart)
-                {
+                if (this.request_restart) {
                     buffer.drawString("Waiting for ", 25, y);
                     y += 20;
                     buffer.drawString("other players", 25, y);
@@ -172,7 +164,7 @@ public class Board extends Canvas {
                     buffer.drawString("...", 25, y);
                 }
             }
-        } catch (RemoteException e){
+        } catch (RemoteException e) {
             e.printStackTrace();
         }
 
@@ -183,9 +175,9 @@ public class Board extends Canvas {
         @Override
         public int compare(int[] p_state1, int[] p_state2) {
             // comparing is done "in reverse" for the priority queue
-            if(p_state1[5] < p_state2[5])
+            if (p_state1[5] < p_state2[5])
                 return 1;
-            else if (p_state1[5] == p_state2[5] )
+            else if (p_state1[5] == p_state2[5])
                 return 0;
             else
                 return -1;

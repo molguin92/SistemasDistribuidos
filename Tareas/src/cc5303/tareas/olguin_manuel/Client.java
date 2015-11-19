@@ -15,7 +15,7 @@ public class Client
     {
 
         //Main class of the client
-        //Must be executed with the IP of the server as a parameter!
+        //Must be executed with the IP of ANY of the servers as a parameter!
 
         String IP = args[0];
         System.setProperty("java.rmi.server.hostname", IP);
@@ -43,11 +43,7 @@ public class Client
                 }
             });
 
-        } catch (NotBoundException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (RemoteException e) {
+        } catch (NotBoundException | MalformedURLException | RemoteException e) {
             e.printStackTrace();
         }
 
