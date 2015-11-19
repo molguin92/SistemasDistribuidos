@@ -275,12 +275,21 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     {
         System.err.println("Starting migration!");
 
-        PriorityQueue<DistributedGameInterface> queue = new PriorityQueue<>(new ServerLoadComparator());
+        float min_load = 100f;
+        float load;
+        current = serverlist[0];
         for ( DistributedGameInterface server : serverlist )
-            if ( server != null )
-                queue.add(server);
+        {
+            try {
+                if ((load = server.getLoadAvg()) < min_load ) {
+                    min_load = load;
+                    current = server;
+                }
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
 
-        current = queue.poll();
         try {
             System.err.println("Migrating to " + current.getIP());
         } catch (RemoteException e) {
@@ -322,26 +331,5 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
 
     }
-
-    private class ServerLoadComparator implements Comparator<DistributedGameInterface>
-    {
-
-        @Override
-        public int compare(DistributedGameInterface server1, DistributedGameInterface server2) {
-            try {
-                if ( server1.getLoadAvg() < server2.getLoadAvg() )
-                    return -1;
-                else if ( server1.getLoadAvg() > server2.getLoadAvg() )
-                    return 1;
-                else
-                    return 0;
-            } catch (RemoteException e) {
-                e.printStackTrace();
-                return 0;
-            }
-        }
-    }
-
-
 
 }

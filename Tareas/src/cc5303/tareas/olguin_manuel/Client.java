@@ -22,13 +22,13 @@ public class Client
 
         DistributedGameInterface remote;
         RemotePlayer player;
-        Board board;
+        final Board board;
 
         try {
             remote = (DistributedGameInterface) Naming.lookup("rmi://" + IP + ":1099/gameserver");
             remote = remote.renewRemote();
             player = remote.getPlayer(-1);
-            int[] dim = remote.getDimensions();
+            final int[] dim = remote.getDimensions();
             if ( player == null )
             {
                 System.err.println("Max amount of players reached!");
