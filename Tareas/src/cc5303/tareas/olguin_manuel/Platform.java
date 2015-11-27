@@ -3,6 +3,7 @@ package cc5303.tareas.olguin_manuel;
 import org.w3c.dom.css.Rect;
 
 import java.awt.*;
+import java.rmi.Remote;
 
 /**
  * Created by arachnid92 on 06-10-15.
@@ -11,7 +12,7 @@ public class Platform extends Rectangle
 {
 
     public static int THICKNESS = 10;
-    private int width;
+    public int width;
 
     public Platform ( int centerX, int centerY, int width )
     {

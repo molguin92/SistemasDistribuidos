@@ -2,9 +2,7 @@ package cc5303.tareas.olguin_manuel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.rmi.RemoteException;
 
 /**
@@ -15,14 +13,12 @@ public class ClientFrame extends JFrame
 
     // Frame of the client, takes care of registering keystrokes.
 
-    Board board;
-    RemotePlayer player;
+    final Board board_f;
     Timer board_update;
 
-    public ClientFrame (RemotePlayer player, Board board, int[] dimensions )
+    public ClientFrame(Board board, int[] dimensions)
     {
-        this.board = board;
-        this.player = player;
+        this.board_f = board;
         setFocusable(true);
         setFocusTraversalKeysEnabled(false);
         setTitle("Ice Climbers");
@@ -57,8 +53,37 @@ public class ClientFrame extends JFrame
         this.board_update = new Timer(16, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                board.repaint();
+                board_f.repaint();
             }
+        });
+
+        this.addWindowListener(new WindowListener() {
+            @Override
+            public void windowOpened(WindowEvent e) {}
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    board_f.game.leaving(board_f.playerID);
+                } catch (RemoteException e1) {
+                    e1.printStackTrace();
+                }
+            }
+
+            @Override
+            public void windowClosed(WindowEvent e) {}
+
+            @Override
+            public void windowIconified(WindowEvent e) {}
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {}
+
+            @Override
+            public void windowActivated(WindowEvent e) {}
+
+            @Override
+            public void windowDeactivated(WindowEvent e) {}
         });
 
         this.board_update.start();
@@ -69,7 +94,7 @@ public class ClientFrame extends JFrame
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                player.moveLeft();
+                board_f.player.moveLeft();
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }
@@ -81,7 +106,7 @@ public class ClientFrame extends JFrame
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                player.moveRight();
+                board_f.player.moveRight();
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }
@@ -93,7 +118,7 @@ public class ClientFrame extends JFrame
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                player.jump();
+                board_f.player.jump();
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }
@@ -105,7 +130,7 @@ public class ClientFrame extends JFrame
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                player.stop();
+                board_f.player.stop();
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }
@@ -117,13 +142,11 @@ public class ClientFrame extends JFrame
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                player.voteRestart();
-                board.request_restart = true;
+                board_f.player.voteRestart();
+                board_f.request_restart = true;
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }
         }
     }
-
-
 }

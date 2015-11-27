@@ -16,20 +16,26 @@ public class GameThread extends Thread {
     private static int WIDTH = 200;
     private static int HEIGHT = 600;
 
-    private boolean running;
-    private boolean started;
-    private int dead_players;
-    private int no_players;
-    private int target_no_players;
-    private int score;
-    private float level_modifier_1;
-    private float level_modifier_2;
+    protected boolean migrate;
+    protected boolean running;
+    protected boolean started;
+    protected boolean gameover;
+    protected int dead_players;
+    protected int no_players;
+    protected int target_no_players;
+    protected int score;
+    protected float level_modifier_1;
+    protected float level_modifier_2;
 
-    private boolean together;
+    protected boolean together;
 
-    public BoardState state;
-    private Player[] players;
-    private ArrayList<Platform> platforms;
+    protected Player[] players;
+    protected ArrayList<Platform> platforms;
+    protected int[][] plat_array;
+    protected int[][] play_array;
+
+    Random rand;
+
 
     public RemotePlayer activatePlayer() {
 
@@ -45,11 +51,13 @@ public class GameThread extends Thread {
                 if (together && no_players == target_no_players)
                     return null;
 
-                Random rng = new Random(System.currentTimeMillis());
+                System.err.println("Activating Player " + player.ID);
                 no_players++;
-                player.ID = no_players;
                 player.active = true;
-                player.body.setLocation(rng.nextInt(WIDTH - 20) + 10, HEIGHT - 50);
+                if (!started)
+                    player.body.setLocation(rand.nextInt(WIDTH - 20) + 10, HEIGHT - 50);
+                else
+                    player.body.setLocation(rand.nextInt(WIDTH - 20) + 10, HEIGHT/2);
 
                 if ( no_players == target_no_players )
                     started = true;
@@ -64,11 +72,10 @@ public class GameThread extends Thread {
     public void run() {
         while (running) {
 
-            if (!started && together) {
+            if ( migrate )
+                return;
 
-                // run together! wait for a minimum amount of players
-                this.state.players = new int[1][7];
-                Arrays.fill(this.state.players[0], -1);
+            if (!started && together) {
 
                 try {
                     Thread.sleep(10);
@@ -79,26 +86,28 @@ public class GameThread extends Thread {
                 continue;
             }
 
+            play_array = new int[players.length][7];
+            for ( int[] a: play_array )
+                Arrays.fill(a, 0);
+
             // next, we update all the objects
 
             boolean shift = false;
 
             this.checkCollisions();
 
-            this.state.players = new int[players.length][0];
             for (int i = 0; i < players.length; i++) {
-
-                players[i].restart = false;
 
                 if (players[i].active) {
                     players[i].update();
-                    players[i].score = this.score;
+                    players[i].score = this.score + players[i].score_offset;
+                    players[i].restart = false;
                 }
                 if (players[i].body.getMaxY() < 200)
                     shift = true;
 
                 try {
-                    this.state.players[i] = players[i].getState();
+                    play_array[i] = players[i].getState();
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -107,9 +116,9 @@ public class GameThread extends Thread {
             if (shift)
                 this.shiftDown();
 
-            this.state.platforms = new int[this.platforms.size()][0];
-            for (int i = 0; i < platforms.size(); i++)
-                this.state.platforms[i] = this.platforms.get(i).getState();
+            plat_array = new int[platforms.size()][4];
+            for ( int i =  0; i < platforms.size(); i++ )
+                plat_array[i] = platforms.get(i).getState();
 
             try {
                 Thread.sleep(10);
@@ -117,13 +126,15 @@ public class GameThread extends Thread {
                 e.printStackTrace();
             }
 
-            if (state.gameover)
+            if (this.gameover)
                 this.GameOver();
         }
 
     }
 
     public GameThread(int n_players, boolean together) {
+
+        rand = new Random(System.nanoTime());
 
         this.target_no_players = n_players;
         this.together = together;
@@ -134,18 +145,19 @@ public class GameThread extends Thread {
             // create inactive players
             try {
                 this.players[i] = new Player(WIDTH / 2, HEIGHT / 2);
+                this.players[i].ID = i + 1;
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
-        try {
-            this.state = new BoardState();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        this.state.players = new int[4][7];
-        this.state.dimensions = new int[2];
-        this.state.dimensions[0] = WIDTH;
-        this.state.dimensions[1] = HEIGHT;
+
+        play_array = new int[1][7];
+        for ( int[] a: play_array )
+            Arrays.fill(a, -1);
+
+        plat_array = new int[1][4];
+        for ( int[] a: plat_array )
+            Arrays.fill(a, 0);
+
         this.running = false;
         this.started = false;
         this.platforms = new ArrayList<>();
@@ -159,55 +171,50 @@ public class GameThread extends Thread {
         //add special ground platform
         this.platforms.add(new Platform(WIDTH / 2, HEIGHT - 2 * Platform.THICKNESS, 2 * WIDTH));
 
-        this.state.platforms = new int[this.platforms.size()][3];
         this.no_players = 0;
         this.score = 0;
     }
 
     @Override
     public void start() {
-        running = true;
+        this.running = true;
+        this.migrate = false;
         super.start();
     }
 
-    private void addPlatformBetween(Random rand, int x1, int x2, int y) {
+    private void addPlatformBetween( int x1, int x2, int y) {
         // adds a level of platforms at Y.
         // the distribution of the platforms is random.
-        System.err.printf("Adding platform between %d and %d\n", x1, x2);
         int pwidth;
         int cX;
         int dx = x2 - x1;
 
         int rand_b = Math.max((int) (level_modifier_1 * dx), 1);
         pwidth = rand.nextInt(rand_b) + (int) (level_modifier_2 * dx);
-        System.err.printf("Platform width: %d\n", pwidth);
         cX = pwidth / 2 + rand.nextInt(dx - pwidth) + x1;
-        System.err.printf("Platform center: %d\n", cX);
         this.platforms.add(new Platform(cX, y, pwidth));
     }
 
-    public void generatePlatforms(int y) {
+    public void generatePlatforms(int y ) {
 
         // initializes a random playing field.
 
-        Random rand = new Random(System.currentTimeMillis());
         int n = rand.nextInt(3) + 1;
-        System.err.printf("Random: %d\n", n);
         int d;
         switch (n) {
             case 1:
-                addPlatformBetween(rand, 0, WIDTH, y);
+                addPlatformBetween( 0, WIDTH, y);
                 break;
             case 2:
                 d = WIDTH / n;
-                addPlatformBetween(rand, 0, d, y);
-                addPlatformBetween(rand, d, 2 * d, y);
+                addPlatformBetween(0, d, y);
+                addPlatformBetween(d, 2 * d, y);
                 break;
             case 3:
                 d = WIDTH / n;
-                addPlatformBetween(rand, 0, d, y);
-                addPlatformBetween(rand, d, 2 * d, y);
-                addPlatformBetween(rand, 2 * d, 3 * d, y);
+                addPlatformBetween(0, d, y);
+                addPlatformBetween(d, 2 * d, y);
+                addPlatformBetween(2 * d, 3 * d, y);
                 break;
             default:
                 break;
@@ -225,7 +232,6 @@ public class GameThread extends Thread {
             for (Platform platform : platforms) {
 
                 if (player.body.intersects(platform)) {
-                    System.out.println("Collision");
                     //arriba
                     if (player.body.getMaxY() >= platform.getMinY() && player.body.getMaxY() < platform.getMaxY()) {
                         player.body.setLocation(player.body.x, platform.y - Player.HW);
@@ -276,13 +282,14 @@ public class GameThread extends Thread {
                 player.lives--;
                 player.body.setLocation(platforms.get(5).x, platforms.get(5).y + Player.HW);
                 player.velY = -1;
-                if (player.lives <= 0) {
-                    player.active = false;
-                    this.dead_players++;
-                    if (this.no_players == this.dead_players) {
-                        System.out.println("no more players alive");
-                        state.gameover = true;
-                    }
+            }
+
+            if (player.lives <= 0) {
+                player.active = false;
+                this.dead_players++;
+                if (this.no_players == this.dead_players) {
+                    System.out.println("no more players alive");
+                    this.gameover = true;
                 }
             }
         }
@@ -318,13 +325,14 @@ public class GameThread extends Thread {
 
     public void GameOver()
     {
-        while (state.gameover)
+        while (this.gameover)
         {
             for (Player p: players)
             {
-                state.gameover = p.restart && state.gameover;
+                this.gameover = p.restart && this.gameover;
+                System.out.println("Player " + p.ID + " votes: " + p.restart);
             }
-            state.gameover = !state.gameover;
+            this.gameover = !this.gameover;
 
             try {
                 Thread.sleep(10);
@@ -339,14 +347,17 @@ public class GameThread extends Thread {
     public void resetGameState()
     {
         System.out.println("Restarting game.");
-        Random rng = new Random(System.currentTimeMillis());
+
+        play_array = new int[1][7];
+        for ( int[] a: play_array )
+            Arrays.fill(a, -1);
+
+        plat_array = new int[1][4];
+        for ( int[] a: plat_array )
+            Arrays.fill(a, 0);
 
         this.dead_players = 0;
-        this.state.players = new int[4][7];
-        this.state.dimensions = new int[2];
-        this.state.dimensions[0] = WIDTH;
-        this.state.dimensions[1] = HEIGHT;
-        this.state.gameover = false;
+        this.gameover = false;
         this.started = true;
         this.platforms = new ArrayList<>();
         this.level_modifier_1 = 0.2f;
@@ -359,7 +370,6 @@ public class GameThread extends Thread {
         //add special ground platform
         this.platforms.add(new Platform(WIDTH / 2, HEIGHT - 2 * Platform.THICKNESS, 2 * WIDTH));
 
-        this.state.platforms = new int[this.platforms.size()][3];
         this.score = 0;
 
         for(int i = 0; i < no_players; i++) {
@@ -367,11 +377,14 @@ public class GameThread extends Thread {
             System.out.println("Reactivating player " + p.ID);
             p.active = true;
             p.score = 0;
-            p.body.setLocation(rng.nextInt(WIDTH - 20) + 10, HEIGHT - 50);
+            p.body.setLocation(rand.nextInt(WIDTH - 20) + 10, HEIGHT - 50);
             p.velY = 0;
             p.lives = 4;
         }
 
     }
 
+    public int[] getDimensions() {
+        return new int[] {WIDTH, HEIGHT};
+    }
 }

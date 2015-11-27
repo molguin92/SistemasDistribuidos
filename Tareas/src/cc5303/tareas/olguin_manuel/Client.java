@@ -15,44 +15,35 @@ public class Client
     {
 
         //Main class of the client
-        //Must be executed with the IP of the server as a parameter!
+        //Must be executed with the IP of ANY of the servers as a parameter!
 
         String IP = args[0];
         System.setProperty("java.rmi.server.hostname", IP);
 
-        RemoteGameInterface remote;
+        DistributedGameInterface remote;
         RemotePlayer player;
-        RemoteBoardState state;
-        Board board;
+        final Board board;
 
         try {
-            remote = (RemoteGameInterface) Naming.lookup("rmi://" + IP + ":1099/gameserver");
-            state = remote.getBoardState();
-            player = remote.getPlayer();
+            remote = (DistributedGameInterface) Naming.lookup("rmi://" + IP + ":1099/gameserver");
+            remote = remote.renewRemote();
+            player = remote.getPlayer(-1);
+            final int[] dim = remote.getDimensions();
             if ( player == null )
             {
                 System.err.println("Max amount of players reached!");
                 System.exit(69);
             }
 
-            board = new Board(state, player.getID());
+            board = new Board(remote, player);
 
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    try {
-                        new ClientFrame(player, board, state.getDimensions());
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
-
+                    new ClientFrame(board, dim);
                 }
             });
 
-        } catch (NotBoundException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (RemoteException e) {
+        } catch (NotBoundException | MalformedURLException | RemoteException e) {
             e.printStackTrace();
         }
 
