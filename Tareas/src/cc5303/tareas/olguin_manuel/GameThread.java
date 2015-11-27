@@ -20,14 +20,14 @@ public class GameThread extends Thread {
     protected boolean running;
     protected boolean started;
     protected boolean gameover;
+    protected boolean together;
+    protected boolean paused;
     protected int dead_players;
     protected int no_players;
     protected int target_no_players;
     protected int score;
     protected float level_modifier_1;
     protected float level_modifier_2;
-
-    protected boolean together;
 
     protected Player[] players;
     protected ArrayList<Platform> platforms;
@@ -75,7 +75,7 @@ public class GameThread extends Thread {
             if ( migrate )
                 return;
 
-            if (!started && together) {
+            if ((!started && together) || paused) {
 
                 try {
                     Thread.sleep(10);
@@ -160,6 +160,7 @@ public class GameThread extends Thread {
 
         this.running = false;
         this.started = false;
+        this.paused = false;
         this.platforms = new ArrayList<>();
         this.level_modifier_1 = 0.2f;
         this.level_modifier_2 = 0.5f;

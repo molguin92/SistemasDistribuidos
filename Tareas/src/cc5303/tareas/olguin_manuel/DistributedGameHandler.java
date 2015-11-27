@@ -189,7 +189,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     @Override
     public void migrateGameThread(boolean running, boolean started, int dead_players, int no_players,
                                   int target_no_players, int score, float level_modifier_1,
-                                  float level_modifier_2, boolean together) throws RemoteException {
+                                  float level_modifier_2, boolean together, boolean paused) throws RemoteException {
 
         // migrates the game thread
 
@@ -203,6 +203,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         this.game.level_modifier_1 = level_modifier_1;
         this.game.level_modifier_2 = level_modifier_2;
         this.game.together = together;
+        this.game.paused = paused;
     }
 
     @Override
@@ -337,7 +338,8 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
                     game.score,
                     game.level_modifier_1,
                     game.level_modifier_2,
-                    game.together);
+                    game.together,
+                    game.paused);
 
 
             for(Player p: game.players )
