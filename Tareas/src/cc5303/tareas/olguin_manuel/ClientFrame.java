@@ -39,12 +39,14 @@ public class ClientFrame extends JFrame
         input.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0, true), "STOP");
 
         input.put(KeyStroke.getKeyStroke(KeyEvent.VK_R, 0), "RESTART");
+        input.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, 0), "PAUSE");
 
         content.getActionMap().put("LEFT", new leftAction());
         content.getActionMap().put("RIGHT", new rightAction());
         content.getActionMap().put("JUMP", new jumpAction());
         content.getActionMap().put("STOP", new stopAction());
         content.getActionMap().put("RESTART", new restartAction());
+        content.getActionMap().put("PAUSE", new pauseAction());
 
         pack();
         setVisible(true);
@@ -144,6 +146,18 @@ public class ClientFrame extends JFrame
             try {
                 board_f.player.voteRestart();
                 board_f.request_restart = true;
+            } catch (RemoteException e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
+
+    class pauseAction extends AbstractAction
+    {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                board_f.player.togglePause();
             } catch (RemoteException e1) {
                 e1.printStackTrace();
             }

@@ -77,6 +77,13 @@ public class GameThread extends Thread {
 
             if ((!started && together) || paused) {
 
+                for(Player p: players)
+                    if(p.active && p.toggle_pause)
+                    {
+                        this.paused = false;
+                        p.toggle_pause = false;
+                    }
+
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
@@ -102,6 +109,11 @@ public class GameThread extends Thread {
                     players[i].update();
                     players[i].score = this.score + players[i].score_offset;
                     players[i].restart = false;
+                    if (players[i].toggle_pause)
+                    {
+                        this.paused = true;
+                        players[i].toggle_pause = false;
+                    }
                 }
                 if (players[i].body.getMaxY() < 200)
                     shift = true;
