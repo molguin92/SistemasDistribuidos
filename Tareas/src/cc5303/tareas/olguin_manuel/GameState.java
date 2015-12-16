@@ -6,7 +6,7 @@ import java.util.ArrayList;
 /**
  * Created by arachnid92 on 16-12-15.
  */
-public class GameState implements Serializable {
+public class GameState implements Serializable, Cloneable {
 
     private static long serialVersionUID = 1L;
 
