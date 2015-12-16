@@ -17,7 +17,7 @@ public class BackupThread extends Thread{
 
     @Override
     public void run() {
-        System.err.print("Backing up... ");
+        System.err.println("Backing up... ");
         try {
             ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("./.state.bkp"));
             oos.writeObject(this.state);
