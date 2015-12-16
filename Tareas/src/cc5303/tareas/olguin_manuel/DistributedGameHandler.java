@@ -50,7 +50,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
         this.os = ManagementFactory.getOperatingSystemMXBean();
         DisconnectionThread t = new DisconnectionThread();
-        t.run();
+        t.start();
     }
 
     @Override
