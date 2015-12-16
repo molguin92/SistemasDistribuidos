@@ -61,7 +61,7 @@ public class Board extends Canvas {
                 System.err.printf("Player is null... wtf?");
                 System.exit(-1);
             }
-        } catch (RemoteException e) {
+        } catch (RemoteException | NullPointerException e) {
             e.printStackTrace();
             this.reconnecting(g);
             return;
@@ -193,8 +193,6 @@ public class Board extends Canvas {
 
         try {
             game = (DistributedGameInterface) Naming.lookup("rmi://" + ip + ":1099/gameserver");
-            game = game.renewRemote();
-            player = game.renewPlayer(playerID);
         } catch (NotBoundException | MalformedURLException | RemoteException e) {
             e.printStackTrace();
         }
