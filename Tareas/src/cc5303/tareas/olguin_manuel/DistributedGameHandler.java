@@ -314,7 +314,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
             // need to get the loads of the other servers, to compare!
 
-            if ( server == null )
+            if ( server == null || server.equals(current) )
                 continue;
 
             try {
