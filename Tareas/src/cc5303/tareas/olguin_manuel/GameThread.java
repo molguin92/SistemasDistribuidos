@@ -16,7 +16,9 @@ public class GameThread extends Thread {
     private static int WIDTH = 200;
     private static int HEIGHT = 600;
 
-    protected boolean migrate;
+    protected GameState state;
+
+/*    protected boolean migrate;
     protected boolean running;
     protected boolean started;
     protected boolean gameover;
@@ -32,35 +34,36 @@ public class GameThread extends Thread {
     protected Player[] players;
     protected ArrayList<Platform> platforms;
     protected int[][] plat_array;
-    protected int[][] play_array;
+    protected int[][] play_array;*/
 
     Random rand;
 
+    int bkp_cnt;
 
     public RemotePlayer activatePlayer() {
 
         // Activates a player for use by a remote client.
 
-        if (started && together)
+        if (state.started && state.together)
             return null;
 
-        for (Player player : players) {
+        for (Player player : state.players) {
 
             if (!player.active) {
 
-                if (together && no_players == target_no_players)
+                if (state.together && state.no_players == state.target_no_players)
                     return null;
 
                 System.err.println("Activating Player " + player.ID);
-                no_players++;
+                state.no_players++;
                 player.active = true;
-                if (!started)
+                if (!state.started)
                     player.body.setLocation(rand.nextInt(WIDTH - 20) + 10, HEIGHT - 50);
                 else
                     player.body.setLocation(rand.nextInt(WIDTH - 20) + 10, HEIGHT/2);
 
-                if ( no_players == target_no_players )
-                    started = true;
+                if ( state.no_players == state.target_no_players )
+                    state.started = true;
 
                 return player;
             }
@@ -70,17 +73,24 @@ public class GameThread extends Thread {
     }
 
     public void run() {
-        while (running) {
+        while (state.running) {
 
-            if ( migrate )
+            bkp_cnt++;
+            if(bkp_cnt >= 50)
+            {
+                bkp_cnt = 0;
+                this.backUpToDisk();
+            }
+
+            if ( state.migrate )
                 return;
 
-            if ((!started && together) || paused) {
+            if ((!state.started && state.together) || state.paused) {
 
-                for(Player p: players)
+                for(Player p: state.players)
                     if(p.active && p.toggle_pause)
                     {
-                        this.paused = false;
+                        this.state.paused = false;
                         p.toggle_pause = false;
                     }
 
@@ -93,8 +103,8 @@ public class GameThread extends Thread {
                 continue;
             }
 
-            play_array = new int[players.length][7];
-            for ( int[] a: play_array )
+            state.play_array = new int[state.players.length][7];
+            for ( int[] a: state.play_array )
                 Arrays.fill(a, 0);
 
             // next, we update all the objects
@@ -103,23 +113,23 @@ public class GameThread extends Thread {
 
             this.checkCollisions();
 
-            for (int i = 0; i < players.length; i++) {
+            for (int i = 0; i < state.players.length; i++) {
 
-                if (players[i].active) {
-                    players[i].update();
-                    players[i].score = this.score + players[i].score_offset;
-                    players[i].restart = false;
-                    if (players[i].toggle_pause)
+                if (state.players[i].active) {
+                    state.players[i].update();
+                    state.players[i].score = this.state.score + state.players[i].score_offset;
+                    state.players[i].restart = false;
+                    if (state.players[i].toggle_pause)
                     {
-                        this.paused = true;
-                        players[i].toggle_pause = false;
+                        this.state.paused = true;
+                        state.players[i].toggle_pause = false;
                     }
                 }
-                if (players[i].body.getMaxY() < 200)
+                if (state.players[i].body.getMaxY() < 200)
                     shift = true;
 
                 try {
-                    play_array[i] = players[i].getState();
+                    state.play_array[i] = state.players[i].getState();
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -128,9 +138,9 @@ public class GameThread extends Thread {
             if (shift)
                 this.shiftDown();
 
-            plat_array = new int[platforms.size()][4];
-            for ( int i =  0; i < platforms.size(); i++ )
-                plat_array[i] = platforms.get(i).getState();
+            state.plat_array = new int[state.platforms.size()][4];
+            for ( int i =  0; i < state.platforms.size(); i++ )
+                state.plat_array[i] = state.platforms.get(i).getState();
 
             try {
                 Thread.sleep(10);
@@ -138,60 +148,68 @@ public class GameThread extends Thread {
                 e.printStackTrace();
             }
 
-            if (this.gameover)
+            if (this.state.gameover)
                 this.GameOver();
         }
 
     }
 
+    public GameThread(GameState state) {
+        rand = new Random(System.nanoTime());
+        this.state = state;
+        this.bkp_cnt = 0;
+    }
+
     public GameThread(int n_players, boolean together) {
+
+        this.bkp_cnt = 0;
 
         rand = new Random(System.nanoTime());
 
-        this.target_no_players = n_players;
-        this.together = together;
-        this.dead_players = 0;
+        this.state.target_no_players = n_players;
+        this.state.together = together;
+        this.state.dead_players = 0;
 
-        this.players = new Player[n_players];
-        for (int i = 0; i < this.players.length; i++)
+        this.state.players = new Player[n_players];
+        for (int i = 0; i < this.state.players.length; i++)
             // create inactive players
             try {
-                this.players[i] = new Player(WIDTH / 2, HEIGHT / 2);
-                this.players[i].ID = i + 1;
+                this.state.players[i] = new Player(WIDTH / 2, HEIGHT / 2);
+                this.state.players[i].ID = i + 1;
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
 
-        play_array = new int[1][7];
-        for ( int[] a: play_array )
+        state.play_array = new int[1][7];
+        for ( int[] a: state.play_array )
             Arrays.fill(a, -1);
 
-        plat_array = new int[1][4];
-        for ( int[] a: plat_array )
+        state.plat_array = new int[1][4];
+        for ( int[] a: state.plat_array )
             Arrays.fill(a, 0);
 
-        this.running = false;
-        this.started = false;
-        this.paused = false;
-        this.platforms = new ArrayList<>();
-        this.level_modifier_1 = 0.2f;
-        this.level_modifier_2 = 0.5f;
+        this.state.running = false;
+        this.state.started = false;
+        this.state.paused = false;
+        this.state.platforms = new ArrayList<>();
+        this.state.level_modifier_1 = 0.2f;
+        this.state.level_modifier_2 = 0.5f;
 
         for (int y = -HEIGHT; y < HEIGHT; y += 100) {
             // generate random platforms
             this.generatePlatforms(y);
         }
         //add special ground platform
-        this.platforms.add(new Platform(WIDTH / 2, HEIGHT - 2 * Platform.THICKNESS, 2 * WIDTH));
+        this.state.platforms.add(new Platform(WIDTH / 2, HEIGHT - 2 * Platform.THICKNESS, 2 * WIDTH));
 
-        this.no_players = 0;
-        this.score = 0;
+        this.state.no_players = 0;
+        this.state.score = 0;
     }
 
     @Override
     public void start() {
-        this.running = true;
-        this.migrate = false;
+        this.state.running = true;
+        this.state.migrate = false;
         super.start();
     }
 
@@ -202,10 +220,10 @@ public class GameThread extends Thread {
         int cX;
         int dx = x2 - x1;
 
-        int rand_b = Math.max((int) (level_modifier_1 * dx), 1);
-        pwidth = rand.nextInt(rand_b) + (int) (level_modifier_2 * dx);
+        int rand_b = Math.max((int) (state.level_modifier_1 * dx), 1);
+        pwidth = rand.nextInt(rand_b) + (int) (state.level_modifier_2 * dx);
         cX = pwidth / 2 + rand.nextInt(dx - pwidth) + x1;
-        this.platforms.add(new Platform(cX, y, pwidth));
+        this.state.platforms.add(new Platform(cX, y, pwidth));
     }
 
     public void generatePlatforms(int y ) {
@@ -236,13 +254,13 @@ public class GameThread extends Thread {
 
     void checkCollisions() {
 
-        for (Player player : players) {
+        for (Player player : state.players) {
 
             if (!player.active)
                 continue;
 
             //between platforms and players
-            for (Platform platform : platforms) {
+            for (Platform platform : state.platforms) {
 
                 if (player.body.intersects(platform)) {
                     //arriba
@@ -260,7 +278,7 @@ public class GameThread extends Thread {
             }
 
             //between players and players
-            for (Player player1 : players) {
+            for (Player player1 : state.players) {
                 if (player == player1 || !player1.active)
                     continue;
 
@@ -293,16 +311,16 @@ public class GameThread extends Thread {
             if (player.body.getMinY() > HEIGHT) {
                 System.out.println("PLAYER OUT");
                 player.lives--;
-                player.body.setLocation(platforms.get(5).x, platforms.get(5).y + Player.HW);
+                player.body.setLocation(state.platforms.get(5).x, state.platforms.get(5).y + Player.HW);
                 player.velY = -1;
             }
 
             if (player.lives <= 0) {
                 player.active = false;
-                this.dead_players++;
-                if (this.no_players == this.dead_players) {
+                this.state.dead_players++;
+                if (this.state.no_players == this.state.dead_players) {
                     System.out.println("no more players alive");
-                    this.gameover = true;
+                    this.state.gameover = true;
                 }
             }
         }
@@ -312,40 +330,40 @@ public class GameThread extends Thread {
 
         // shifts the board downwards,
         // and cleans up platforms that are no longer in view
-        score++;
+        state.score++;
         LinkedList<Platform> removal = new LinkedList<>();
-        for (Platform platform : platforms) {
+        for (Platform platform : state.platforms) {
             platform.translate(0, 1);
 
             if (platform.getMinY() > HEIGHT)
                 removal.add(platform);
         }
 
-        for (Player player : players)
+        for (Player player : state.players)
             player.body.translate(0, 1);
 
-        if (score % 100 == 0) {
-            this.level_modifier_1 = this.level_modifier_1 > 0 ? this.level_modifier_1 - 0.005f : 0;
-            this.level_modifier_2 = this.level_modifier_2 > 0 ? this.level_modifier_2 - 0.005f : 0;
+        if (state.score % 100 == 0) {
+            this.state.level_modifier_1 = this.state.level_modifier_1 > 0 ? this.state.level_modifier_1 - 0.005f : 0;
+            this.state.level_modifier_2 = this.state.level_modifier_2 > 0 ? this.state.level_modifier_2 - 0.005f : 0;
             this.generatePlatforms(-HEIGHT);
         }
 
         for (Platform platform : removal)
-            platforms.remove(platform);
+            state.platforms.remove(platform);
         removal = null;
     }
 
 
     public void GameOver()
     {
-        while (this.gameover)
+        while (this.state.gameover)
         {
-            for (Player p: players)
+            for (Player p: state.players)
             {
-                this.gameover = p.restart && this.gameover;
+                this.state.gameover = p.restart && this.state.gameover;
                 System.out.println("Player " + p.ID + " votes: " + p.restart);
             }
-            this.gameover = !this.gameover;
+            this.state.gameover = !this.state.gameover;
 
             try {
                 Thread.sleep(10);
@@ -361,32 +379,32 @@ public class GameThread extends Thread {
     {
         System.out.println("Restarting game.");
 
-        play_array = new int[1][7];
-        for ( int[] a: play_array )
+        state.play_array = new int[1][7];
+        for ( int[] a: state.play_array )
             Arrays.fill(a, -1);
 
-        plat_array = new int[1][4];
-        for ( int[] a: plat_array )
+        state.plat_array = new int[1][4];
+        for ( int[] a: state.plat_array )
             Arrays.fill(a, 0);
 
-        this.dead_players = 0;
-        this.gameover = false;
-        this.started = true;
-        this.platforms = new ArrayList<>();
-        this.level_modifier_1 = 0.2f;
-        this.level_modifier_2 = 0.5f;
+        this.state.dead_players = 0;
+        this.state.gameover = false;
+        this.state.started = true;
+        this.state.platforms = new ArrayList<>();
+        this.state.level_modifier_1 = 0.2f;
+        this.state.level_modifier_2 = 0.5f;
 
         for (int y = -HEIGHT; y < HEIGHT; y += 100) {
             // generate random platforms
             this.generatePlatforms(y);
         }
         //add special ground platform
-        this.platforms.add(new Platform(WIDTH / 2, HEIGHT - 2 * Platform.THICKNESS, 2 * WIDTH));
+        this.state.platforms.add(new Platform(WIDTH / 2, HEIGHT - 2 * Platform.THICKNESS, 2 * WIDTH));
 
-        this.score = 0;
+        this.state.score = 0;
 
-        for(int i = 0; i < no_players; i++) {
-            Player p = players[i];
+        for(int i = 0; i < state.no_players; i++) {
+            Player p = state.players[i];
             System.out.println("Reactivating player " + p.ID);
             p.active = true;
             p.score = 0;
@@ -399,5 +417,11 @@ public class GameThread extends Thread {
 
     public int[] getDimensions() {
         return new int[] {WIDTH, HEIGHT};
+    }
+
+    public void backUpToDisk()
+    {
+        BackupThread t = new BackupThread(this.state);
+        t.run();
     }
 }

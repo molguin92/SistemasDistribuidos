@@ -61,10 +61,7 @@ public class GameServer {
         try {
             Naming.rebind(urlServer, rinter);
             System.out.println("Listening on "+urlServer);
-        } catch (RemoteException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
+        } catch (RemoteException | MalformedURLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
