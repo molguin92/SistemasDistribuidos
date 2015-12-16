@@ -371,6 +371,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             this.migrated = true;
             this.current = target;
             current.activate(false);
+            new File("./.state.bkp").delete(); // delete backup
 
         } catch (InterruptedException | RemoteException e) {
             e.printStackTrace();
