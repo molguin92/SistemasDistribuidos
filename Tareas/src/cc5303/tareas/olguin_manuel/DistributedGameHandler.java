@@ -302,8 +302,11 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
 
         for ( Player player: game.players )
-            if ( player.ID == ID )
+            if ( player.ID == ID ) {
+                 if(!player.active)
+                     player.active = true;
                 return player;
+            }
 
         return null;
     }
