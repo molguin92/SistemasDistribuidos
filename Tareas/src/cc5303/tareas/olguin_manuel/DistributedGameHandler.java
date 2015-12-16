@@ -329,7 +329,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         }
 
         try {
-            System.err.println("Migrating to " + current.getIP());
+            System.err.println("Migrating to " + target.getIP());
         } catch (RemoteException e) {
             e.printStackTrace();
         }
