@@ -7,7 +7,7 @@ import java.rmi.server.UnicastRemoteObject;
 /**
  * Created by arachnid92 on 03-10-15.
  */
-public class Player extends UnicastRemoteObject implements RemotePlayer, Cloneable
+public class Player extends UnicastRemoteObject implements RemotePlayer
 {
 
     // the logical representation of the player in the game
@@ -111,12 +111,5 @@ public class Player extends UnicastRemoteObject implements RemotePlayer, Cloneab
         this.lives = 4;
 
         this.body = new Rectangle( posX, posY, Player.HW, Player.HW  );
-    }
-
-    @Override
-    public Player clone() throws CloneNotSupportedException {
-        Player p = (Player) super.clone();
-        p.body = (Rectangle) this.body.clone();
-        return p;
     }
 }

@@ -1,5 +1,6 @@
 package cc5303.tareas.olguin_manuel;
 
+import java.io.FileReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.net.MalformedURLException;
@@ -21,6 +22,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     private static final long serialVersionUID = 1L;
 
     GameThread game;
+    FileReader file_reader;
     DistributedGameInterface[] serverlist;
     DistributedGameInterface current; // <- important! always point to the server currently running the game
     private Queue<String> servers;
@@ -66,12 +68,12 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         // open a new slot and migrate
 
         System.err.println("Player " + playerID + " is leaving. Opening player slot.");
-        Player p = game.state.players[playerID - 1];
-        game.state.no_players--;
-        game.state.together = false;
+        Player p = game.players[playerID - 1];
+        game.no_players--;
+        game.together = false;
         p.active = false;
         p.score = 0;
-        p.score_offset = -1 * game.state.score;
+        p.score_offset = -1 * game.score;
         p.lives = 4;
         p.restart = true;
         this.migrate();
@@ -176,10 +178,10 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         this.game = new GameThread(new_n_players, together);
 
         System.err.println("Clearing players...");
-        game.state.players = new Player[new_n_players];
+        game.players = new Player[new_n_players];
 
         System.err.println("Clearing platforms...");
-        game.state.platforms.clear();
+        game.platforms.clear();
 
     }
 
@@ -192,16 +194,16 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         // migrates the game thread
 
         System.err.println("Receiving game state...");
-        this.game.state.running = running;
-        this.game.state.started = started;
-        this.game.state.dead_players = dead_players;
-        this.game.state.no_players = no_players;
-        this.game.state.target_no_players = target_no_players;
-        this.game.state.score = score;
-        this.game.state.level_modifier_1 = level_modifier_1;
-        this.game.state.level_modifier_2 = level_modifier_2;
-        this.game.state.together = together;
-        this.game.state.paused = paused;
+        this.game.running = running;
+        this.game.started = started;
+        this.game.dead_players = dead_players;
+        this.game.no_players = no_players;
+        this.game.target_no_players = target_no_players;
+        this.game.score = score;
+        this.game.level_modifier_1 = level_modifier_1;
+        this.game.level_modifier_2 = level_modifier_2;
+        this.game.together = together;
+        this.game.paused = paused;
     }
 
     @Override
@@ -212,16 +214,16 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
         System.err.println("Receiving Player " + ID + "...");
         int i = ID - 1;
-        this.game.state.players[i] = new Player(posX, posY);
-        this.game.state.players[i].ID = ID;
-        this.game.state.players[i].velX = velX;
-        this.game.state.players[i].velY = velY;
-        this.game.state.players[i].active = active;
-        this.game.state.players[i].score = score;
-        this.game.state.players[i].score_offset = score_offset;
-        this.game.state.players[i].lives = lives;
-        this.game.state.players[i].jumping = jumping;
-        this.game.state.players[i].restart = restart;
+        this.game.players[i] = new Player(posX, posY);
+        this.game.players[i].ID = ID;
+        this.game.players[i].velX = velX;
+        this.game.players[i].velY = velY;
+        this.game.players[i].active = active;
+        this.game.players[i].score = score;
+        this.game.players[i].score_offset = score_offset;
+        this.game.players[i].lives = lives;
+        this.game.players[i].jumping = jumping;
+        this.game.players[i].restart = restart;
     }
 
     @Override
@@ -236,21 +238,21 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
                 width
         );
 
-        this.game.state.platforms.add(p);
+        this.game.platforms.add(p);
     }
 
     @Override
     public int[][] getPlayers() throws RemoteException {
         if ( !current.equals(this) )
             return current.getPlayers();
-        return game.state.play_array;
+        return game.play_array;
     }
 
     @Override
     public int[][] getPlatforms() throws RemoteException {
         if ( !current.equals(this) )
             return current.getPlatforms();
-        return game.state.plat_array;
+        return game.plat_array;
     }
 
     @Override
@@ -264,7 +266,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     public boolean getGameOver() throws RemoteException {
         if ( !current.equals(this) )
             return current.getGameOver();
-        return game.state.gameover;
+        return game.gameover;
     }
 
     @Override
@@ -280,7 +282,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         if ( !current.equals(this) )
             return current.renewPlayer(ID);
 
-        for ( Player player: game.state.players )
+        for ( Player player: game.players )
             if ( player.ID == ID )
                 return player;
 
@@ -322,30 +324,30 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             e.printStackTrace();
         }
 
-        game.state.migrate = true;
+        game.migrate = true;
         try {
             game.join();
             System.err.println("Game paused.");
-            target.prepareMigration(game.state.target_no_players, game.state.together );
+            target.prepareMigration(game.target_no_players, game.together );
 
-            target.migrateGameThread(game.state.running,
-                    game.state.started,
-                    game.state.dead_players,
-                    game.state.no_players,
-                    game.state.target_no_players,
-                    game.state.score,
-                    game.state.level_modifier_1,
-                    game.state.level_modifier_2,
-                    game.state.together,
-                    game.state.paused);
+            target.migrateGameThread(game.running,
+                    game.started,
+                    game.dead_players,
+                    game.no_players,
+                    game.target_no_players,
+                    game.score,
+                    game.level_modifier_1,
+                    game.level_modifier_2,
+                    game.together,
+                    game.paused);
 
 
-            for(Player p: game.state.players )
+            for(Player p: game.players )
                 target.migratePlayer(p.ID, p.body.x, p.body.y,
                         p.velX, p.velY, p.active,
                         p.score, p.lives, p.jumping, p.restart, p.score_offset);
 
-            for (Platform p: game.state.platforms)
+            for (Platform p: game.platforms)
                 target.migratePlatform(p.x, p.y, p.width);
 
             this.active = false;
