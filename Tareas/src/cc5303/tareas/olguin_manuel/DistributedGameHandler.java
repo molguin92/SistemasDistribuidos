@@ -303,6 +303,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
         for ( Player player: game.players )
             if ( player.ID == ID ) {
+                this.renew_counter[ID - 1] = 10;
                  if(!player.active)
                      player.active = true;
                 return player;
@@ -406,7 +407,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
                 }
 
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
