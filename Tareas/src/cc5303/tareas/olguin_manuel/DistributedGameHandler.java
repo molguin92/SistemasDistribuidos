@@ -314,10 +314,10 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
             // need to get the loads of the other servers, to compare!
 
-            if ( server == null || server.equals(current) )
-                continue;
-
             try {
+                if ( !(server != null && server.getIP().compareTo(current.getIP()) != 0) )
+                    continue;
+          
                 System.err.println("Polling load from " + server.getIP());
                 if ((load = server.getLoadAvg()) < min_load ) {
                     min_load = load;
