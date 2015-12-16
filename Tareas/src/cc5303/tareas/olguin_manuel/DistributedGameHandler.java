@@ -22,13 +22,12 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     private static final long serialVersionUID = 1L;
 
     GameThread game;
-    FileReader file_reader;
     DistributedGameInterface[] serverlist;
     DistributedGameInterface current; // <- important! always point to the server currently running the game
     private Queue<String> servers;
     public boolean active;
     public String own_ip;
-
+    public int[] renew_counter;
     private boolean together;
     private int n_players;
 
@@ -47,8 +46,10 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
         this.together = together;
         this.n_players = n_players;
+        this.renew_counter = new int[n_players];
 
         this.os = ManagementFactory.getOperatingSystemMXBean();
+        new DisconnectionThread().run();
     }
 
     @Override
@@ -94,6 +95,9 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
         // a client wants a player
         // activate one and hand it to the caller
+
+        if(playerID > -1)
+            return current.renewPlayer(playerID);
 
         if ( !current.equals(this) )
             return current.getPlayer(playerID);
@@ -292,6 +296,8 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         if ( !current.equals(this) )
             return current.renewPlayer(ID);
 
+        renew_counter[ID] = 10;
+
         for ( Player player: game.players )
             if ( player.ID == ID )
                 return player;
@@ -317,7 +323,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             try {
                 if ( !(server != null && server.getIP().compareTo(current.getIP()) != 0) )
                     continue;
-          
+
                 System.err.println("Polling load from " + server.getIP());
                 if ((load = server.getLoadAvg()) < min_load ) {
                     min_load = load;
@@ -378,4 +384,25 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
     }
 
+    private class DisconnectionThread extends Thread
+    {
+        @Override
+        public void run() {
+            for(;;)
+            {
+                for(int i = 0; i < renew_counter.length; i++) {
+                    renew_counter[i]--;
+                    if(renew_counter[i] <= 0) {
+                        game.players[i].active = false;
+                    }
+                }
+
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }
