@@ -51,4 +51,5 @@ public interface DistributedGameInterface extends Remote
 
     void leaving(int playerID) throws RemoteException;
     void togglePause() throws RemoteException;
+    boolean isPaused() throws RemoteException;
 }

@@ -124,6 +124,17 @@ public class Board extends Canvas {
         buffer.drawString("SCORE: " + score, 25, 25);
         buffer.drawString("LIVES: " + lives, 25, 50);
 
+        try {
+            if(game.isPaused())
+            {
+                buffer.setColor(Color.MAGENTA);
+                buffer.drawString("PAUSED", HEIGHT/2, 30);
+            }
+
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
         g.drawImage(img, 0, 0, null);
     }
 
