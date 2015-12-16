@@ -1,6 +1,9 @@
 package cc5303.tareas.olguin_manuel;
 
 import java.awt.*;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -18,10 +21,11 @@ public class Board extends Canvas {
     private ScoreComparator scoreComparator;
     private PriorityQueue<int[]> pqueue;
     public boolean request_restart;
+    String ip;
 
     DistributedGameInterface game;
 
-    public Board(DistributedGameInterface game, RemotePlayer player) {
+    public Board(DistributedGameInterface game, RemotePlayer player, String ip) {
         this.player = player;
         try {
             this.playerID = player.getID();
@@ -33,6 +37,7 @@ public class Board extends Canvas {
         this.pqueue = new PriorityQueue<>(4, scoreComparator);
         this.request_restart = false;
         this.game = game;
+        this.ip = ip;
     }
 
     @Override
@@ -58,6 +63,8 @@ public class Board extends Canvas {
             }
         } catch (RemoteException e) {
             e.printStackTrace();
+            this.reconnecting(g);
+            return;
         }
 
         if (buffer == null) {
@@ -78,7 +85,8 @@ public class Board extends Canvas {
             platforms = game.getPlatforms();
         } catch (RemoteException e) {
             e.printStackTrace();
-            System.exit(-1);
+            this.reconnecting(g);
+            return;
         }
 
         for (int[] player : players) {
@@ -171,7 +179,28 @@ public class Board extends Canvas {
         g.drawImage(img, 0, 0, null);
     }
 
-    private class ScoreComparator implements Comparator<int[]> {
+    private void reconnecting( Graphics g) {
+        if (buffer == null) {
+            img = createImage(getWidth(), getHeight());
+            buffer = img.getGraphics();
+        }
+        buffer.setColor(Color.black);
+        buffer.fillRect(0, 0, getWidth(), getHeight());
+        buffer.setColor(Color.CYAN);
+        int y = 100;
+        buffer.drawString("Reconnecting...", 25, y);
+        g.drawImage(img, 0, 0, null);
+
+        try {
+            game = (DistributedGameInterface) Naming.lookup("rmi://" + ip + ":1099/gameserver");
+            game = game.renewRemote();
+            player = game.renewPlayer(playerID);
+        } catch (NotBoundException | MalformedURLException | RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+        private class ScoreComparator implements Comparator<int[]> {
         @Override
         public int compare(int[] p_state1, int[] p_state2) {
             // comparing is done "in reverse" for the priority queue

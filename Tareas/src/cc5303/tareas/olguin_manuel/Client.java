@@ -35,7 +35,7 @@ public class Client
                 System.exit(69);
             }
 
-            board = new Board(remote, player);
+            board = new Board(remote, player, IP );
 
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
