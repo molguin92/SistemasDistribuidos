@@ -47,10 +47,12 @@ public class Board extends Canvas {
 
             // check for migration...
             // if the server has migrated, we need to renew our references to the remote objects!
-            if (game.hasMigrated()) {
-                game = game.renewRemote();
-                player = game.renewPlayer(playerID);
-            }
+//            if (game.hasMigrated()) {
+//
+//            }
+
+            game = game.renewRemote();
+            player = game.renewPlayer(playerID);
 
             if (player == null) {
                 System.err.printf("Player is null... wtf?");
