@@ -72,6 +72,7 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
 
     @Override
     public void togglePause() throws RemoteException {
+        System.err.println("tryna pause this bitch motherfucker");
         this.toggle_pause = true;
     }
 
