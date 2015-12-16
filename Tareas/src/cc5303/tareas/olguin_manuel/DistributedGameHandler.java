@@ -104,7 +104,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             return current.getPlayer(playerID);
 
         Player p = (Player) game.activatePlayer();
-        this.renew_counter[p.ID - 1] = 100;
+        this.renew_counter[p.ID - 1] = 10;
         return p;
     }
 
@@ -300,7 +300,6 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         if ( !current.equals(this) )
             return current.renewPlayer(ID);
 
-        renew_counter[ID - 1] = 100;
 
         for ( Player player: game.players )
             if ( player.ID == ID )
