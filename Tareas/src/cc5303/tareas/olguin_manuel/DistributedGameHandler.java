@@ -163,12 +163,15 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
                 File bkp = new File("./.state.bkp");
                 if(bkp.exists())
                 {
+                    System.err.print("Trying to read from backup... ");
                     try {
                         ObjectInputStream in = new ObjectInputStream(new FileInputStream(bkp));
                         GameState state;
                         state = (GameState) in.readObject();
                         this.game = new GameThread(state);
+                        System.err.println("Success!");
                     } catch (IOException | ClassNotFoundException e) {
+                        System.err.println("Failed.");
                         e.printStackTrace();
                         this.game = new GameThread(this.n_players, this.together);
                     }
