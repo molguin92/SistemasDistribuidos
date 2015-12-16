@@ -66,9 +66,6 @@ public class ClientFrame extends JFrame
             @Override
             public void windowClosing(WindowEvent e) {
                 try {
-                    if(board_f.game.isPaused())
-                        board_f.pause();
-
                     board_f.game.leaving(board_f.playerID);
                 } catch (RemoteException e1) {
                     e1.printStackTrace();
