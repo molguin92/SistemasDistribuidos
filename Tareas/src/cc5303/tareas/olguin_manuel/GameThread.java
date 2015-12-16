@@ -36,6 +36,10 @@ public class GameThread extends Thread {
 
     Random rand;
 
+    public void togglePause()
+    {
+        this.paused = !paused;
+    }
 
     public RemotePlayer activatePlayer() {
 
@@ -75,14 +79,7 @@ public class GameThread extends Thread {
             if ( migrate )
                 return;
 
-            if ((!started && together) || paused) {
-
-                for(Player p: players)
-                    if(p.active && p.toggle_pause)
-                    {
-                        this.paused = false;
-                        p.toggle_pause = false;
-                    }
+            if ((!started && together) || paused ) {
 
                 try {
                     Thread.sleep(10);
@@ -109,11 +106,6 @@ public class GameThread extends Thread {
                     players[i].update();
                     players[i].score = this.score + players[i].score_offset;
                     players[i].restart = false;
-                    if (players[i].toggle_pause)
-                    {
-                        this.paused = true;
-                        players[i].toggle_pause = false;
-                    }
                 }
                 if (players[i].body.getMaxY() < 200)
                     shift = true;

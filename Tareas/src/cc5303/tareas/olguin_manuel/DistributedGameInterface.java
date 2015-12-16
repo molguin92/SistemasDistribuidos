@@ -50,4 +50,5 @@ public interface DistributedGameInterface extends Remote
     boolean hasMigrated() throws RemoteException;
 
     void leaving(int playerID) throws RemoteException;
+    void togglePause() throws RemoteException;
 }

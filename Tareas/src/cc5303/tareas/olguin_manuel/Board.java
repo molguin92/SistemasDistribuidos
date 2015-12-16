@@ -171,6 +171,15 @@ public class Board extends Canvas {
         g.drawImage(img, 0, 0, null);
     }
 
+    void pause()
+    {
+        try {
+            this.game.togglePause();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
     private class ScoreComparator implements Comparator<int[]> {
         @Override
         public int compare(int[] p_state1, int[] p_state2) {

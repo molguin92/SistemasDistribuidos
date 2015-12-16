@@ -156,11 +156,7 @@ public class ClientFrame extends JFrame
     {
         @Override
         public void actionPerformed(ActionEvent e) {
-            try {
-                board_f.player.togglePause();
-            } catch (RemoteException e1) {
-                e1.printStackTrace();
-            }
+            board_f.pause();
         }
     }
 }

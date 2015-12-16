@@ -18,7 +18,6 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     public Rectangle body;
 
     public boolean restart;
-    public boolean toggle_pause;
 
     public float velX;
     public float velY;
@@ -70,12 +69,6 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
         this.restart = true;
     }
 
-    @Override
-    public void togglePause() throws RemoteException {
-        System.err.println("tryna pause this bitch motherfucker");
-        this.toggle_pause = true;
-    }
-
     public void update()
     {
         this.body.translate((int)this.velX, (int)this.velY);
@@ -106,7 +99,6 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
         this.jumping = false;
         this.active = false;
         this.restart = false;
-        this.toggle_pause = false;
         this.score = 0;
         this.score_offset = 0;
         this.lives = 4;

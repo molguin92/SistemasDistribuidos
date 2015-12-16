@@ -80,6 +80,11 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     }
 
     @Override
+    public void togglePause() throws RemoteException {
+        this.game.togglePause();
+    }
+
+    @Override
     public RemotePlayer getPlayer(int playerID) throws RemoteException {
 
         // a client wants a player
