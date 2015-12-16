@@ -334,6 +334,9 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             e.printStackTrace();
         }
 
+        boolean was_paused = game.paused;
+        game.paused = false;
+
         game.migrate = true;
         try {
             game.join();
@@ -364,6 +367,9 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             this.migrated = true;
             this.current = target;
             current.activate(false);
+
+            if(was_paused)
+                current.togglePause();
 
         } catch (InterruptedException | RemoteException e) {
             e.printStackTrace();
