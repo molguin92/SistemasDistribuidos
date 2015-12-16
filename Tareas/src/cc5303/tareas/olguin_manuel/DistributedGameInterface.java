@@ -48,6 +48,7 @@ public interface DistributedGameInterface extends Remote
     String getIP () throws RemoteException;
 
     boolean hasMigrated() throws RemoteException;
+    void ping(int playerID) throws RemoteException;
 
     void leaving(int playerID) throws RemoteException;
     void togglePause() throws RemoteException;

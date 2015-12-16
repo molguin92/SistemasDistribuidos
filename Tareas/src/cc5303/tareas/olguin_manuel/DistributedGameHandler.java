@@ -64,6 +64,13 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     }
 
     @Override
+    public void ping(int playerID) throws RemoteException {
+        this.renew_counter[playerID - 1] = 10;
+        if(!game.players[playerID].active)
+            game.players[playerID].active = true;
+    }
+
+    @Override
     public void leaving(int playerID) throws RemoteException {
 
         // indicates that player playerID is leaving the game
