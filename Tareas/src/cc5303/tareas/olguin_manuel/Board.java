@@ -128,7 +128,7 @@ public class Board extends Canvas {
             if(game.isPaused())
             {
                 buffer.setColor(Color.MAGENTA);
-                buffer.drawString("PAUSED", HEIGHT/2, 30);
+                buffer.drawString("PAUSED", 250, 60);
             }
 
         } catch (RemoteException e) {

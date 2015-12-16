@@ -16,7 +16,7 @@ public class ClientFrame extends JFrame
     final Board board_f;
     Timer board_update;
 
-    public ClientFrame(Board board, int[] dimensions)
+    public ClientFrame(final Board board, int[] dimensions)
     {
         this.board_f = board;
         setFocusable(true);
@@ -66,6 +66,9 @@ public class ClientFrame extends JFrame
             @Override
             public void windowClosing(WindowEvent e) {
                 try {
+                    if(board_f.game.isPaused())
+                        board_f.pause();
+
                     board_f.game.leaving(board_f.playerID);
                 } catch (RemoteException e1) {
                     e1.printStackTrace();
