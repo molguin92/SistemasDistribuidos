@@ -1,5 +1,6 @@
 package cc5303.tareas.olguin_manuel;
 
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.net.MalformedURLException;
@@ -158,8 +159,23 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             this.active = true;
             this.current = this;
 
-            if (first_run)
-                this.game = new GameThread(this.n_players, this.together);
+            if (first_run) {
+                File bkp = new File("./.state.bkp");
+                if(bkp.exists())
+                {
+                    try {
+                        ObjectInputStream in = new ObjectInputStream(new FileInputStream(bkp));
+                        GameState state;
+                        state = (GameState) in.readObject();
+                        this.game = new GameThread(state);
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
+                        this.game = new GameThread(this.n_players, this.together);
+                    }
+                }
+                else
+                    this.game = new GameThread(this.n_players, this.together);
+            }
 
             this.game.start();
             this.migrated = false;

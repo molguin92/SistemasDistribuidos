@@ -53,7 +53,7 @@ public class GameServer {
 
         DistributedGameInterface rinter = null;
         try {
-            rinter = new DistributedGameHandler(servers , IP, n_players, together ); // TODO Fix
+            rinter = new DistributedGameHandler(servers , IP, n_players, together );
         } catch (RemoteException e) {
             e.printStackTrace();
         }

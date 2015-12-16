@@ -25,6 +25,5 @@ public class BackupThread extends Thread{
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.err.println("Done!");
     }
 }
