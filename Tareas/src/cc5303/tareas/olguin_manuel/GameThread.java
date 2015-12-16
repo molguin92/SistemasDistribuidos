@@ -163,6 +163,7 @@ public class GameThread extends Thread {
     public GameThread(int n_players, boolean together) {
 
         this.bkp_cnt = 0;
+        this.state = new GameState();
 
         rand = new Random(System.nanoTime());
 
