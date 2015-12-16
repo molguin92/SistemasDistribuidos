@@ -49,7 +49,8 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         this.renew_counter = new int[n_players];
 
         this.os = ManagementFactory.getOperatingSystemMXBean();
-        new DisconnectionThread().run();
+        DisconnectionThread t = new DisconnectionThread();
+        t.run();
     }
 
     @Override
