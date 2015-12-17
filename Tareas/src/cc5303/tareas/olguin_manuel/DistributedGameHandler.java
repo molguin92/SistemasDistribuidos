@@ -398,15 +398,16 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         public void run() {
             for(;;)
             {
-                for(Player p: this.gh.game.players)
-                {
-                    if(this.gh.game.started && p.active)
-                        if(System.currentTimeMillis() - p.last_update > 500 )
-                            try {
-                                this.gh.leaving(p.ID);
-                            } catch (RemoteException e) {
-                                e.printStackTrace();
-                            }
+                if (this.gh.game != null) {
+                    for (Player p : this.gh.game.players) {
+                        if (this.gh.game.started && p.active)
+                            if (System.currentTimeMillis() - p.last_update > 500)
+                                try {
+                                    this.gh.leaving(p.ID);
+                                } catch (RemoteException e) {
+                                    e.printStackTrace();
+                                }
+                    }
                 }
                 try {
                     Thread.sleep(100);
