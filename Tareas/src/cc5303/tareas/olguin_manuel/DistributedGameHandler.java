@@ -410,7 +410,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
                         renew_counter[i]--;
                         if (renew_counter[i] == 0 && this.gh.game.started && this.gh.game.players[i] != null && this.gh.game.players[i].active) {
                             try {
-                                gh.leaving(i);
+                                gh.leaving(i + 1);
                             } catch (RemoteException e) {
                                 e.printStackTrace();
                             }
