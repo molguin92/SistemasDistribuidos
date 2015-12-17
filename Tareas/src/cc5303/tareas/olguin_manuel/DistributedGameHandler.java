@@ -49,7 +49,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         this.renew_counter = new int[n_players];
 
         this.os = ManagementFactory.getOperatingSystemMXBean();
-        DisconnectionThread t = new DisconnectionThread();
+        DisconnectionThread t = new DisconnectionThread(this);
         t.start();
     }
 
@@ -66,8 +66,6 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     @Override
     public void ping(int playerID) throws RemoteException {
         this.renew_counter[playerID - 1] = 10;
-        //if(!game.players[playerID].active)
-        //    game.players[playerID].active = true;
     }
 
     @Override
@@ -400,6 +398,11 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
     private class DisconnectionThread extends Thread
     {
+        DistributedGameHandler gh;
+        public DisconnectionThread(DistributedGameHandler gh) {
+            this.gh = gh;
+        }
+
         @Override
         public void run() {
             for(;;)
@@ -408,7 +411,11 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
                     for (int i = 0; i < renew_counter.length; i++) {
                         renew_counter[i]--;
                         if (renew_counter[i] <= 0) {
-                            game.players[i].active = false;
+                            try {
+                                gh.leaving(i + 1);
+                            } catch (RemoteException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
