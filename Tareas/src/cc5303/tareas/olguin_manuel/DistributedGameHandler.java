@@ -197,7 +197,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         // pre-migration preparation
 
         System.err.println("Starting migration.");
-
+        this.migrated = false;
         this.game = new GameThread(new_n_players, together);
 
         System.err.println("Clearing players...");
@@ -309,8 +309,6 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         for ( Player player: game.players )
             if ( player.ID == ID ) {
                 this.renew_counter[ID - 1] = 10;
-                 if(!player.active)
-                     player.active = true;
                 return player;
             }
 
