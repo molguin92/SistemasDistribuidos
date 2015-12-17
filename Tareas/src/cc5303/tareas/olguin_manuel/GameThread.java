@@ -61,6 +61,11 @@ public class GameThread extends Thread {
 
                 System.err.println("Activating Player " + player.ID);
                 no_players++;
+                try {
+                    player.ping();
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 player.active = true;
                 if (!started)
                     player.body.setLocation(rand.nextInt(WIDTH - 20) + 10, HEIGHT - 50);
