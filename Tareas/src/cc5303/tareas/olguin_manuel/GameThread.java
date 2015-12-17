@@ -45,15 +45,19 @@ public class GameThread extends Thread {
 
         // Activates a player for use by a remote client.
 
-        if (started && together)
+        if (started && together) {
+            System.err.println("nope bitch");
             return null;
+        }
 
         for (Player player : players) {
 
             if (!player.active) {
 
-                if (together && no_players == target_no_players)
+                if (together && no_players == target_no_players) {
+                    System.err.println("Returning null maddafucka");
                     return null;
+                }
 
                 System.err.println("Activating Player " + player.ID);
                 no_players++;
@@ -70,6 +74,7 @@ public class GameThread extends Thread {
             }
         }
 
+        System.err.println("Bitches be active");
         return null;
     }
 
