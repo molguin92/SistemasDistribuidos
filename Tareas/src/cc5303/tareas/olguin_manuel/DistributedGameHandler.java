@@ -27,7 +27,6 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
     private Queue<String> servers;
     public boolean active;
     public String own_ip;
-    public int[] renew_counter;
     private boolean together;
     private int n_players;
 
@@ -46,7 +45,6 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
         this.together = together;
         this.n_players = n_players;
-        this.renew_counter = new int[n_players];
 
         this.os = ManagementFactory.getOperatingSystemMXBean();
         DisconnectionThread t = new DisconnectionThread(this);
@@ -61,11 +59,6 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
     public boolean hasMigrated() throws RemoteException {
         return this.migrated;
-    }
-
-    @Override
-    public void ping(int playerID) throws RemoteException {
-        this.renew_counter[playerID - 1] = 10;
     }
 
     @Override
@@ -109,7 +102,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             return current.getPlayer(playerID);
 
         Player p = (Player) game.activatePlayer();
-        this.renew_counter[p.ID - 1] = 10;
+        p.ping();
         return p;
     }
 
@@ -308,7 +301,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
 
         for ( Player player: game.players )
             if ( player.ID == ID ) {
-                this.renew_counter[ID - 1] = 10;
+                player.ping();
                 return player;
             }
 
@@ -405,20 +398,16 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
         public void run() {
             for(;;)
             {
-                if(game != null) {
-                    for (int i = 0; i < renew_counter.length; i++) {
-                        if(this.gh.game.players[i].active)
-                            renew_counter[i]--;
-                        if (renew_counter[i] <= 0) {
+                for(Player p: this.gh.game.players)
+                {
+                    if(this.gh.game.started && p.active)
+                        if(System.currentTimeMillis() - p.last_update > 500 )
                             try {
-                                gh.leaving(i + 1);
+                                this.gh.leaving(p.ID);
                             } catch (RemoteException e) {
                                 e.printStackTrace();
                             }
-                        }
-                    }
                 }
-
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {

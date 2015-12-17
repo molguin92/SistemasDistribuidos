@@ -29,6 +29,8 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
     public int score_offset;
     public int lives;
 
+    public long last_update;
+
     public void accelerate( float X, float Y )
     {
         this.velX += X;
@@ -89,6 +91,11 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
         return this.ID;
     }
 
+    @Override
+    public void ping() throws RemoteException {
+        this.last_update = System.currentTimeMillis();
+    }
+
     public Player ( int posX, int posY ) throws RemoteException
     {
         super();
@@ -104,5 +111,6 @@ public class Player extends UnicastRemoteObject implements RemotePlayer
         this.lives = 4;
 
         this.body = new Rectangle( posX, posY, Player.HW, Player.HW  );
+        this.last_update = System.currentTimeMillis();
     }
 }
