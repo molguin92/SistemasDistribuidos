@@ -400,7 +400,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
             {
                 if (this.gh.game != null) {
                     for (Player p : this.gh.game.players) {
-                        if (this.gh.game.started && p.active)
+                        if (this.gh.game.running && !this.gh.game.migrate && p.active)
                             if (System.currentTimeMillis() - p.last_update > 500)
                                 try {
                                     p.ping();
