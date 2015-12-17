@@ -403,6 +403,7 @@ public class DistributedGameHandler extends UnicastRemoteObject implements Distr
                         if (this.gh.game.started && p.active)
                             if (System.currentTimeMillis() - p.last_update > 500)
                                 try {
+                                    p.ping();
                                     this.gh.leaving(p.ID);
                                 } catch (RemoteException e) {
                                     e.printStackTrace();
